@@ -1,0 +1,95 @@
+@charset "utf-8";
+
+/* CSS document */
+
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	width: 100%;
+	height: 100%;
+	font-family: 'Montserrat', sans-serif;
+	background-image: url("../img/solar-panel.jpg");
+	background-position: center center;
+	background-size: cover;
+	background-repeat: no-repeat;
+	margin: 0;
+}
+
+/* #e30613 */
+/* rgba(255,255,255,0.7) */
+
+div.container {
+	width: 90%;
+	margin: auto;
+	display: block;
+	overflow: hidden;
+}
+
+div.status-container {
+	width: 29%;
+	margin: 1%;
+	padding: 1%;
+	float: left;
+	background-color: rgba(48,48,48,0.8);
+}
+
+div.chart {
+	height: 40vh;
+	position: absolute;
+	bottom: 50px;
+	width: 83%;
+	margin-left: 6%;
+	margin-right: 7%;
+	background-color: rgba(48,48,48,0.8);
+	padding: 2%;
+}
+
+div.status {
+	color: rgba(255,255,255,1);
+	font-size: 1vw;
+}
+
+p.meter {
+	font-size: 3vw;
+	font-style: italic;
+	padding: 0;
+	margin-bottom: 5px;
+	overflow: hidden;
+}
+
+div.line {
+	width: 90%;
+	margin-right: 10%;
+	height: 3px;
+	background-color: #e30613;
+}
+
+div.status-row {
+	color: rgba(255,255,255,0.9);
+	margin: auto;
+	width: 90%;
+	padding-top: 50px;
+}
+
+div.current-status {
+	padding: 1%;
+	font-size: 1vw;
+}
+
+div.logo {
+	display: inline-block;
+	padding: 0;
+	width: 95%;
+	margin: auto;
+	padding-bottom: 50px;
+}
+
+div.logo img {
+	float: left;
+	padding: 1%;
+	width: 30%;
+	margin-top: 0;
+}
