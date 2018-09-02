@@ -11,14 +11,14 @@
 	<div class="container">
 		<div class="status-container">
 			<div class="status">
-				<h1>Dag totaal</h1>
+				<h1>Tagesertrag</h1>
 				<p class="meter" id="dayTotal"></p>
 				<div class="line"></div>
 			</div>
 		</div>
 		<div class="status-container">
 			<div class="status">
-				<h1>Totaal</h1>
+				<h1>Gesamtertrag</h1>
 				<p class="meter" id="total"></p>
 				<div class="line"></div>
 			</div>
