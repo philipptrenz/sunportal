@@ -143,7 +143,7 @@
 		}
 
 		function loadData() {
-			$.ajax({type: 'post', dataType: "json", url: './updateData.php', success: function(response) {
+			$.ajax({type: 'post', dataType: "json", url: './update.php', success: function(response) {
 				$('#dayTotal').html(addPrefix(response.dayTotal) + "Wh");
 				$('#total').html(addPrefix(response.total*1000) + "Wh");
 				$('#co2').html(addPrefix(response.co2) + "t");
