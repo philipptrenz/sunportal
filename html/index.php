@@ -3,7 +3,7 @@
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <head>
-	<title>SunPortal</title>
+	<title>sunportal</title>
 	<script src="./js/jquery-3.3.1.js"></script>
 	<script src="./js/chart.js"></script>
 </head>
