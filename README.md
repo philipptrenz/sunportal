@@ -20,9 +20,10 @@ sudo apt install apache2 php php-sqlite3
 sudo cp -r * /var/www/html
 
 # Make a link to the SBFspot database 
-sudo ln -s /home/pi/smadata/SBFspot.db /var/www/html/SBFspot.db
+sudo ln /home/pi/smadata/SBFspot.db /var/www/html/SBFspot.db
 
 # Update permissions
+sudo chown -R pi:www-data /home/pi/smadata/
 sudo chown -R pi:www-data /var/www/html/
 sudo chmod -R 770 /var/www/html/
 
