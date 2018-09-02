@@ -6,7 +6,7 @@ sunportal is a web based visualisation tool to display data of a SMA solar inver
 
 ## Installation on a Raspberry Pi
 
-First install and configure SBFspot. After that install SunPortal:
+First install and configure SBFspot, don't forget to initialize the database. After that install sunportal:
 
 ```
 # Install apache and php
