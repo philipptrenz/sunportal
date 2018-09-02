@@ -3,9 +3,7 @@
 
 ## Installation
 
-First install and configure SBFspot and make sure SBFspot is running.
-
-After that:
+First install and configure SBFspot. After that install SunPortal:
 
 ```
 # Install apache and php
