@@ -3,13 +3,9 @@
 
 ## Installation
 
-First install and configure SBFspot.
+First install and configure SBFspot and make sure SBFspot is running.
 
-Copy database_script.py to `/home/pi/sbfdata/database_script.py` and add it to cron with crontab -e. Run every 5 minutes.
-OR
-Set the database pointer to `./html/SBFspot.db`
-
-Then:
+After that:
 
 ```
 # Install apache and php
