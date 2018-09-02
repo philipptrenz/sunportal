@@ -5,9 +5,9 @@
 
 First install and configure SBFspot.
 
-Copy database_script.py to /home/pi/sbfdata/database_script.py and add it to cron with crontab -e. Run every 5 minutes.
+Copy database_script.py to `/home/pi/sbfdata/database_script.py` and add it to cron with crontab -e. Run every 5 minutes.
 OR
-Set the database pointer to ./html/SBFspot.db
+Set the database pointer to `./html/SBFspot.db`
 
 Then:
 
