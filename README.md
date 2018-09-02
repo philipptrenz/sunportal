@@ -1,5 +1,7 @@
-
 # SunPortal
+
+![sunportal example image](http://cloud.philipptrenz.de/index.php/apps/gallery/s/DAppzj9DyHPBx8i)
+
 
 ## Installation
 
