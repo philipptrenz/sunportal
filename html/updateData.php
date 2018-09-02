@@ -5,7 +5,7 @@
 
 
 	//Connection to database
-	$db = new SQLite3("../SBFspot.db");
+	$db = new SQLite3("./SBFspot.db");
 
 	//Uptime
 	$query = "SELECT * FROM SpotData;";
