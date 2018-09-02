@@ -22,13 +22,13 @@
 
 	$table = array();
 
-    $i = 0; 
+	$i = 0; 
 
-    while($res = $rs->fetchArray(SQLITE3_ASSOC)){ 
+	while($res = $rs->fetchArray(SQLITE3_ASSOC)){ 
 		$table[$i]['time'] = $res['TimeStamp']; 
 		$table[$i]['power'] = $res['Power']; 
 		$i++; 
-    } 
+	} 
 
 	// Total yield of today
 	$query = "SELECT EToday FROM SpotData WHERE TimeStamp = (SELECT MAX(TimeStamp) FROM SpotData);";
