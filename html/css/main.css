@@ -18,42 +18,22 @@ body {
 	margin: 0;
 }
 
-/* #e30613 */
-/* rgba(255,255,255,0.7) */
-
-div.container {
-	width: 90%;
-	margin: auto;
-	display: block;
-	overflow: hidden;
-}
-
-div.status-container {
-	width: 29%;
-	margin: 1%;
-	padding: 1%;
-	float: left;
+div.status-container, div.chart {
+	padding: 1.5vw;
+	margin: 0.75vw 0;
+	color: rgba(255,255,255,1);
 	background-color: rgba(48,48,48,0.8);
 }
 
-div.chart {
-	height: 40vh;
-	position: absolute;
-	bottom: 50px;
-	width: 83%;
-	margin-left: 6%;
-	margin-right: 7%;
-	background-color: rgba(48,48,48,0.8);
-	padding: 2%;
+canvas {
+	height: 30vh !important;
 }
 
 div.status {
 	color: rgba(255,255,255,1);
-	font-size: 1vw;
 }
 
 p.meter {
-	font-size: 3vw;
 	font-style: italic;
 	padding: 0;
 	margin-bottom: 5px;
@@ -67,16 +47,8 @@ div.line {
 	background-color: #e30613;
 }
 
-div.status-row {
-	color: rgba(255,255,255,0.9);
-	margin: auto;
-	width: 90%;
-	padding-top: 50px;
-}
-
 div.current-status {
 	padding: 1%;
-	font-size: 1vw;
 }
 
 div.logo {
