@@ -31,6 +31,6 @@ sudo chmod -R 770 /var/www/html/
 sudo reboot
 ```
 
-# Disclaimer
+## Disclaimer
 
 SMA, Speedwire are registered trademarks of SMA Solar Technology AG.
