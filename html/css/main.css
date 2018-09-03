@@ -13,6 +13,8 @@ body {
 
 div#outer {
 	height: auto;
+	min-height: 100vh;
+	
 	background-image: url("../img/solar-panel.jpg");
 	background-position: center;
     background-repeat: no-repeat;
