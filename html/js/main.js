@@ -117,7 +117,7 @@ function loadData() {
 		for (var name in response.inverters) {
 			var serial = response.inverters[name].serial;
 
-			console.log(response.inverters[name]);
+			//console.log(response.inverters[name]);
 
 			if ( !$( "#chart-"+serial ).length ) {		// if chart not initialized
 
@@ -128,6 +128,15 @@ function loadData() {
 
 				lastDataSetLength[serial] = 0;
 
+			}
+
+			// remove faulty values (probably caused by overflows in inverter)
+			for (var i = 0; i < response.inverters[name].last24h.length; i++) {
+				var data = response.inverters[name].last24h[i];
+				if (data.power >= 10000000) { 						// faulty value was 145911144	
+					console.log("found faulty value for inveter "+name+": ", response.inverters[name].last24h[i]);
+					response.inverters[name].last24h.splice(i, 1); 	// remove
+				}
 			}
 
 			removeAllData(lastDataSetLength[serial], charts[serial]);
