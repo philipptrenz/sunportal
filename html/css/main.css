@@ -2,20 +2,22 @@
 
 /* CSS document */
 
-html {
-	width: 100%;
-	height: 100%;
+body, html {
+    height: 100%;
 }
 
 body {
-	width: 100%;
-	height: 100%;
 	font-family: 'Montserrat', sans-serif;
-	background-image: url("../img/solar-panel.jpg");
-	background-position: center center;
-	background-size: cover;
-	background-repeat: no-repeat;
 	margin: 0;
+}
+
+div#outer {
+	height: auto;
+	background-image: url("../img/solar-panel.jpg");
+	background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding: 1vw 0;
 }
 
 div.status-container, div.chart {
