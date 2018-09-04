@@ -22,6 +22,10 @@ div#outer {
     padding: 1vw 0;
 }
 
+div#content {
+	display: none;
+}
+
 div.status-container, div.chart {
 	padding: 1.5vw;
 	margin: 0.75vw 0;
@@ -68,4 +72,14 @@ div.logo img {
 	padding: 1%;
 	width: 30%;
 	margin-top: 0;
+}
+
+/* ----- multi language part ------ */
+
+.lang {
+    display: none;
+}
+
+#lang-de .de, #lang-en .en {
+    display: block;
 }
