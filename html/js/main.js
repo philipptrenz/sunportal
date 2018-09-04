@@ -11,7 +11,6 @@ $(document).ready(function () {
 	/* ----- multi language part ------ */
 
 	var usrLang = window.navigator.userLanguage || window.navigator.language;
-	
 	if (usrLang.indexOf('de') !== -1) langCode = 'de';
 	else langCode = 'en';
 	$('body').attr( "id",'lang-'+langCode);
@@ -55,20 +54,16 @@ function initializeInverterCanvas() {
 		var inv = inverters[i];
 
 		if ( !$( "#chart-"+inv.serial ).length ) {		// if chart not initialized
-
 			$( "#charts" ).append( "<div class='chart col-12'><h5>"+inv.name+"</h5><canvas id='"+"chart-"+inv.serial+"' height='200px'/></div>" );
-			//var ctx = $( "#"+"chart-"+serial ).getContext('2d');
-			var ctx = document.getElementById( "chart-"+inv.serial ).getContext('2d');
-			charts[inv.serial] = initializeChart(ctx);
-
+			
+			initializeChart(inv.serial);
 			lastDataSetLength[inv.serial] = 0;
-
 		}
 	}
 }
 
-function initializeChart(ctx) {
-
+function initializeChart(serial) {
+	var ctx = document.getElementById( "chart-"+serial ).getContext('2d');
 	var hourFormat;
 	if (langCode == 'de') hourFormat = 'H [Uhr]';
 	else hourFormat = 'h A';
@@ -121,7 +116,7 @@ function initializeChart(ctx) {
 	        }
 	    }
 	});
-	return new_chart;
+	charts[serial] = new_chart;
 }
 
 function loadData() {
