@@ -105,6 +105,7 @@ function initializeChart(serial) {
 						}
                     },
 	                ticks: {
+	                	beginAtZero: true,
 	                    fontColor: 'rgba(255,255,255,1)'
 	                }
 	            }]
@@ -150,6 +151,8 @@ function loadData() {
 				dataset.data = data;
 			});
 			chart.update();
+
+			console.log(inv.serial, moment.unix(label[0]).format('DD.MM.YYYY, HH:mm:ss'), moment.unix(label[label.length-1]).format('DD.MM.YYYY, HH:mm:ss'));
 		}
 	}
 	});
