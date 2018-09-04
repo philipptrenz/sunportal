@@ -122,12 +122,6 @@ function initializeChart(serial) {
 function loadData() {
 	$.ajax({type: 'post', dataType: "json", url: './update.php', success: function(response) {
 
-		/*
-		$("#dayTotal").fadeOut(500, function() { $(this).text( addPrefix(response.dayTotal) + "Wh" ) 	}).fadeIn(500);
-		$("#total").fadeOut(500, function() { 	$(this).text( addPrefix(response.total*1000) + "Wh" ) 	}).fadeIn(500);
-		$("#co2").fadeOut(500, function() { 	$(this).text( addPrefix(response.co2) + "t" ) 			}).fadeIn(500);
-		*/
-
 		$("#dayTotal").text( addPrefix(response.dayTotal) + "Wh" );
 		$("#total").text( addPrefix(response.total*1000) + "Wh" );
 		$("#co2").text( addPrefix(response.co2) + "t" );
@@ -135,7 +129,6 @@ function loadData() {
 		// update local stored inverters
 		for (var name in response.inverters) {
 			var serial = response.inverters[name].serial;
-
 			if (!containsInverter(serial)) inverters.push({ 'serial': serial, 'name': name});
 		}
 
@@ -152,15 +145,12 @@ function loadData() {
 			var label = datapoints.map(a => moment.unix(a.time)); // convert unix epch (seconds) to moment.js object
 			var data = datapoints.map(b => b.power);
 
-			
 			chart.data.labels = label;
 			chart.data.datasets.forEach((dataset) => {
 				dataset.data = data;
 			});
 			chart.update();
-
 		}
-
 	}
 	});
 }
