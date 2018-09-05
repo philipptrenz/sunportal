@@ -9,8 +9,8 @@
 
 
 
-	//$day = date('Y-m-d'); // TEST
-	$day = '2018-09-04';
+	$day = date('Y-m-d'); // TEST
+	//$day = '2018-09-04';
 	
 
 	// get requested date from POST variable
@@ -147,6 +147,8 @@
 
 		$inverter_data["all"] = array("serial" => "0000", "last24h" => $table, "dayTotal" => $data['dayTotal'], "total" =>$data['total'], "co2" => $data['co2']);
 	}
+
+	$data['day'] = $day;
 
 	// Deactivate single charts for now
 	unset($inverter_data["SN: 2130309491"]);

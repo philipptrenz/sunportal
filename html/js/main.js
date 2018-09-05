@@ -6,7 +6,7 @@ var inverters = [];
 var charts = [];
 var langCode = "";
 
-var currentDay = "";
+var currentDay = new Date().toISOString().slice(0,10); // today in format 'YYYY-MM-DD'
 
 $(document).ready(function () {
 
@@ -36,11 +36,13 @@ $(document).ready(function () {
 	$('.icon-chevron-left').click(function() {
 		var canvas = $(this).parent().find( "canvas" )[0];
 		var inv = $(canvas).attr('id').replace('chart-', '');
+		navigateOneDay(currentDay, 'backwards');
 	});
 
 	$('.icon-chevron-right').click(function() {
 		var canvas = $(this).parent().find( "canvas" )[0];
 		var inv = $(canvas).attr('id').replace('chart-', '');
+		navigateOneDay(currentDay, 'forwards');
 	});
 
 });
@@ -69,7 +71,8 @@ function initializeInverterCanvas() {
 
 			 var html = `
 				<div class='chart col-12'>
-					<h5>`+inv.name+`</h5>
+					<h5 class="inverter-name">`+inv.name+`</h5>
+					<h5 class="chart-date">`+getDateStringForPrint()+`</h5>
 					<div class="chart-container">
 						<i class="icon-chevron-left"></i>
 						<div class="chart-container-inner">
@@ -149,11 +152,9 @@ function initializeChart(serial) {
 
 function loadData(day) {
 
-	var today = new Date().toISOString().slice(0,10);
-
 	// request chart from day x in format 'YYYY-MM-DD'
-	if (day) currentDay = day
-	else currentDay = today
+	if (day) currentDay = day;
+	else currentDay = new Date().toISOString().slice(0,10); // today
 
 	var request_data = { 
 		day : currentDay 
@@ -162,6 +163,11 @@ function loadData(day) {
 	$.ajax({ type: 'post', url: './update.php', data : request_data, success: function(resp) {
 
 		var response = JSON.parse(resp); 
+
+		console.log(response)
+
+		currentDay = response.day;
+		$('.chart-date').text(getDateStringForPrint());
 
 		$("#dayTotal").text( addPrefix(response.dayTotal) + "Wh" );
 		$("#total").text( addPrefix(response.total*1000) + "Wh" );
@@ -211,6 +217,26 @@ function loadData(day) {
 		}
 	}
 	});
+}
+
+function navigateOneDay(dayString, direction) {
+	var date = moment(dayString).format('YYYY-MM-DD');
+	if (direction == 'forwards') {
+		date = moment(date).add(1, 'days').format("YYYY-MM-DD");
+		loadData(date)
+	} else if (direction == 'backwards') {
+		date = moment(date).subtract(1, 'days').format("YYYY-MM-DD");
+		loadData(date)
+	}
+}
+
+function getDateStringForPrint() {
+	if (langCode == 'de') {
+		return currentDay.replace( /(\d{4})-(\d{2})-(\d{2})/, "$3.$2.$1");
+	} else {
+		return currentDay.replace('-', '/').replace('-', '/');
+	}
+	
 }
 
 function containsInverter(serial) {
