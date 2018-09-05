@@ -6,6 +6,8 @@ var inverters = [];
 var charts = [];
 var langCode = "";
 
+var currentDay = "";
+
 $(document).ready(function () {
 
 	/* ----- multi language part ------ */
@@ -29,6 +31,16 @@ $(document).ready(function () {
 		loadData();
 		window.setInterval(loadData, reloadTime);	
 
+	});
+
+	$('.icon-chevron-left').click(function() {
+		var canvas = $(this).parent().find( "canvas" )[0];
+		var inv = $(canvas).attr('id').replace('chart-', '');
+	});
+
+	$('.icon-chevron-right').click(function() {
+		var canvas = $(this).parent().find( "canvas" )[0];
+		var inv = $(canvas).attr('id').replace('chart-', '');
 	});
 
 });
@@ -55,16 +67,19 @@ function initializeInverterCanvas() {
 
 		if ( !$( "#chart-"+inv.serial ).length ) {		// if chart not initialized
 
-			var html = `	
+			 var html = `
 				<div class='chart col-12'>
 					<h5>`+inv.name+`</h5>
 					<div class="chart-container">
 						<i class="icon-chevron-left"></i>
-						<canvas id='`+`chart-`+inv.serial+`' height='200px'/>
+						<div class="chart-container-inner">
+							<canvas id='`+`chart-`+inv.serial+`' class='chart-canvas' height='200px'/>
+						</div>
 						<i class="icon-chevron-right"></i>
 					</div>
 				</div>
 			 `;
+
 
 			$( "#charts" ).append( html );
 
@@ -136,15 +151,12 @@ function loadData(day) {
 
 	var today = new Date().toISOString().slice(0,10);
 
-
 	// request chart from day x in format 'YYYY-MM-DD'
-
-	var get_day;
-	if (day) get_day = day
-	else get_day = today
+	if (day) currentDay = day
+	else currentDay = today
 
 	var request_data = { 
-		day : get_day 
+		day : currentDay 
 	};
 
 	$.ajax({ type: 'post', url: './update.php', data : request_data, success: function(resp) {

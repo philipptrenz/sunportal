@@ -9,7 +9,8 @@
 
 
 
-	$day = date('Y-m-d'); // TEST
+	//$day = date('Y-m-d'); // TEST
+	$day = '2018-09-04';
 	
 
 	// get requested date from POST variable
@@ -18,7 +19,6 @@
 		$day = $_POST["day"];
 
 	}
-
 
 	$time1 = strtotime( $day );
 	$time2 = strtotime( $day.' +1 day' );
@@ -126,8 +126,6 @@
 		// Total yield (of all inverters) of last 24h 
 		$table = array();
 		//$query = "SELECT TimeStamp, SUM(Power) AS Power FROM DayData WHERE TimeStamp >= (SELECT (MAX(TimeStamp)-86400) FROM DayData) GROUP BY TimeStamp HAVING Count(*)=" . sizeof($inverters) . ";";
-		
-		$day = '2018-09-04'; // TEST
 
 		// WHERE TimeStamp > " . strtotime( $day ) . " AND TimeStamp < " . strtotime( $day.' +1 day' ) . " 
 
