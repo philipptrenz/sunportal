@@ -6,7 +6,7 @@ var inverters = [];
 var charts = [];
 var langCode = "";
 
-var currentDay = new Date().toISOString().slice(0,10); // today in format 'YYYY-MM-DD'
+var currentDay = setCurrentDay(); // today in format 'YYYY-MM-DD'
 
 $(document).ready(function () {
 
@@ -135,7 +135,6 @@ function initializeChart(serial) {
 						}
                     },
 	                ticks: {
-	                	beginAtZero: true,
 	                    fontColor: 'rgba(255,255,255,1)'
 	                }
 	            }]
@@ -153,8 +152,8 @@ function initializeChart(serial) {
 function loadData(day) {
 
 	// request chart from day x in format 'YYYY-MM-DD'
-	if (day) currentDay = day;
-	else currentDay = new Date().toISOString().slice(0,10); // today
+	if (day) setCurrentDay(day);
+	else setCurrentDay(); // today
 
 	var request_data = { 
 		day : currentDay 
@@ -164,9 +163,10 @@ function loadData(day) {
 
 		var response = JSON.parse(resp); 
 
-		console.log(response)
+		//console.log(response)
 
-		currentDay = response.day;
+		setCurrentDay(response.day);
+
 		$('.chart-date').text(getDateStringForPrint());
 
 		$("#dayTotal").text( addPrefix(response.dayTotal) + "Wh" );
@@ -198,19 +198,29 @@ function loadData(day) {
 			var chart = charts[inv.serial];
 			var datapoints = response.inverters[inv.name].last24h;
 			var amount = lastDataSetLength[inv.serial];
-	
+			
 			var label = datapoints.map(a => moment.unix(a.time)); // convert unix epch (seconds) to moment.js object
 			var data = datapoints.map(b => b.power);
 
+			// update labels and data
 			chart.data.labels = label;
 			chart.data.datasets.forEach((dataset) => {
 				dataset.data = data;
 			});
+
+			// update scale
+			var currentDayDate =  moment(currentDay).format('YYYY-MM-DD');
+
+			chart.options.scales.xAxes[0].ticks.suggestedMin = moment(currentDayDate).subtract(1, 'days');
+			chart.options.scales.xAxes[0].ticks.suggestedMax = moment(currentDayDate);
+
+			//console.log(moment(currentDayDate).subtract(1, 'day'), moment(currentDayDate))
+
 			chart.update();
 
 			for (var j = 0; j < datapoints.length; j++) {
 				var d = datapoints[j];
-				console.log(moment.unix(d.time).format('DD.MM.YYYY, HH:mm [Uhr]'), d.power)
+				//console.log(moment.unix(d.time).format('DD.MM.YYYY, HH:mm [Uhr]'), d.power)
 			}
 
 			//console.log(inv.serial, moment.unix(label[0]).format('DD.MM.YYYY, HH:mm:ss'), moment.unix(label[label.length-1]).format('DD.MM.YYYY, HH:mm:ss'));
@@ -230,12 +240,35 @@ function navigateOneDay(dayString, direction) {
 	}
 }
 
-function getDateStringForPrint() {
-	if (langCode == 'de') {
-		return currentDay.replace( /(\d{4})-(\d{2})-(\d{2})/, "$3.$2.$1");
+function setCurrentDay(newDay) {
+	if (newDay) currentDay = newDay;
+	else currentDay = new Date().toISOString().slice(0,10);
+
+	var date = moment(currentDay).format('YYYY-MM-DD');
+
+	// hide right arrow button if currentDay is today
+	if (moment(date).isSame(new Date(), "day")) {
+		$('.icon-chevron-right').each(function() {
+            $(this).css("visibility", "hidden");
+        });
 	} else {
-		return currentDay.replace('-', '/').replace('-', '/');
+		$('.icon-chevron-right').each(function() {
+            $(this).css("visibility", "visible");
+        });
 	}
+}
+
+function getDateStringForPrint() {
+	if (currentDay) {
+		if (langCode == 'de' ) {
+			return currentDay.replace( /(\d{4})-(\d{2})-(\d{2})/, "$3.$2.$1");
+		} else {
+			return currentDay.replace('-', '/').replace('-', '/');
+		}		
+	} else {
+		return '';
+	}
+
 	
 }
 
