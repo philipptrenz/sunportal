@@ -36,6 +36,22 @@ div#content {
 	display: none;
 }
 
+div.chart-container {
+	display: flex;
+	flex-direction: row
+}
+
+div.chart-container div > i {
+	padding: 0.5vw;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+}
+
+div.chart-container canvas {
+	justify-content: stretch;
+}
+
 canvas {
 	height: 30vh !important;
 }

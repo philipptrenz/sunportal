@@ -54,8 +54,20 @@ function initializeInverterCanvas() {
 		var inv = inverters[i];
 
 		if ( !$( "#chart-"+inv.serial ).length ) {		// if chart not initialized
-			$( "#charts" ).append( "<div class='chart col-12'><h5>"+inv.name+"</h5><canvas id='"+"chart-"+inv.serial+"' height='200px'/></div>" );
-			
+
+			var html = `	
+				<div class='chart col-12'>
+					<h5>`+inv.name+`</h5>
+					<div class="chart-container">
+						<i class="icon-chevron-left"></i>
+						<canvas id='`+`chart-`+inv.serial+`' height='200px'/>
+						<i class="icon-chevron-right"></i>
+					</div>
+				</div>
+			 `;
+
+			$( "#charts" ).append( html );
+
 			initializeChart(inv.serial);
 			lastDataSetLength[inv.serial] = 0;
 		}
@@ -120,24 +132,50 @@ function initializeChart(serial) {
 	charts[serial] = new_chart;
 }
 
-function loadData() {
-	$.ajax({type: 'post', dataType: "json", url: './update.php', success: function(response) {
+function loadData(day) {
+
+	var today = new Date().toISOString().slice(0,10);
+
+
+	// request chart from day x in format 'YYYY-MM-DD'
+
+	var get_day;
+	if (day) get_day = day
+	else get_day = today
+
+	var request_data = { 
+		day : get_day 
+	};
+
+	$.ajax({ type: 'post', url: './update.php', data : request_data, success: function(resp) {
+
+		var response = JSON.parse(resp); 
 
 		$("#dayTotal").text( addPrefix(response.dayTotal) + "Wh" );
 		$("#total").text( addPrefix(response.total*1000) + "Wh" );
 		$("#co2").text( addPrefix(response.co2) + "t" );
 
 		// update local stored inverters
+		inverters = [];
 		for (var name in response.inverters) {
 			var serial = response.inverters[name].serial;
-			if (!containsInverter(serial)) inverters.push({ 'serial': serial, 'name': name});
+			inverters.push({ 'serial': serial, 'name': name});
 		}
+
+		// delete chart if inverter does no longer exist
+		$('canvas').each(function() {
+			var id = $(this).attr('id').replace('chart-', '');
+			if (!id in inverters) $(this).parent().remove();
+		});
 
 		saveInvertersToCookie();
 		initializeInverterCanvas();
 
 		for (var i = 0; i < inverters.length; i++) {
+
 			var inv = inverters[i];
+
+			if (!response.inverters[inv.name].last24h) continue;
 
 			var chart = charts[inv.serial];
 			var datapoints = response.inverters[inv.name].last24h;
@@ -152,7 +190,12 @@ function loadData() {
 			});
 			chart.update();
 
-			console.log(inv.serial, moment.unix(label[0]).format('DD.MM.YYYY, HH:mm:ss'), moment.unix(label[label.length-1]).format('DD.MM.YYYY, HH:mm:ss'));
+			for (var j = 0; j < datapoints.length; j++) {
+				var d = datapoints[j];
+				console.log(moment.unix(d.time).format('DD.MM.YYYY, HH:mm [Uhr]'), d.power)
+			}
+
+			//console.log(inv.serial, moment.unix(label[0]).format('DD.MM.YYYY, HH:mm:ss'), moment.unix(label[label.length-1]).format('DD.MM.YYYY, HH:mm:ss'));
 		}
 	}
 	});
