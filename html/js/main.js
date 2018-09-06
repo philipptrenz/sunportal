@@ -1,6 +1,6 @@
 
 var maxDecimals = 2;
-var reloadTime = 60 * 1000;		// reload once a minute
+var reloadTime = 10 * 1000;		// reload once a minute
 var lastDataSetLength = [];
 var inverters = [];
 var charts = [];
@@ -160,13 +160,11 @@ function loadData(day) {
 	if (requesting) return;
 	else requesting = true;
 
-	// request chart from day x in format 'YYYY-MM-DD'
-	if (day) setCurrentDay(day);
-	else setCurrentDay(); // today
-
 	var request_data = { 
 		day : currentDay 
 	};
+
+	//console.log("Requesting data for "+currentDay+" ...");
 
 	$.ajax({ 
 		type: 'post', 
@@ -250,10 +248,12 @@ function navigateOneDay(dayString, direction) {
 	var date = moment(dayString).format('YYYY-MM-DD');
 	if (direction == 'forwards') {
 		date = moment(date).add(1, 'days').format("YYYY-MM-DD");
-		loadData(date)
+		currentDay = date;
+		loadData();
 	} else if (direction == 'backwards') {
 		date = moment(date).subtract(1, 'days').format("YYYY-MM-DD");
-		loadData(date)
+		currentDay = date;
+		loadData();
 	}
 }
 
@@ -276,8 +276,10 @@ function setCurrentDay(newDay) {
 
 	// always show back
 	$('.icon-chevron-left').each(function() {
-            $(this).css("visibility", "visible");
-        });
+        $(this).css("visibility", "visible");
+    });
+
+    return currentDay;
 
 }
 
