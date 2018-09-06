@@ -71,14 +71,17 @@ function initializeInverterCanvas() {
 
 			 var html = `
 				<div class='chart col-12'>
-					<h5 class="inverter-name">`+inv.name+`</h5>
-					<h5 class="chart-date">`+getDateStringForPrint()+`</h5>
+					<div class="row">
+						<div class="col-sm"><h5 class="inverter-name">`+inv.name+`</h5></div>
+						<div class="col-sm"></div>
+						<div class="col-sm"><h5 class="chart-date">`+getDateStringForPrint()+`</h5></div>
+					</div>
 					<div class="chart-container">
-						<i class="icon-chevron-left"></i>
+						<i class="icon-chevron-left" style="visibility: hidden;"></i>
 						<div class="chart-container-inner">
 							<canvas id='`+`chart-`+inv.serial+`' class='chart-canvas' height='200px'/>
 						</div>
-						<i class="icon-chevron-right"></i>
+						<i class="icon-chevron-right" style="visibility: hidden;"></i>
 					</div>
 				</div>
 			 `;
@@ -92,11 +95,10 @@ function initializeInverterCanvas() {
 	}
 }
 
+
 function initializeChart(serial) {
 	var ctx = document.getElementById( "chart-"+serial ).getContext('2d');
 	var hourFormat;
-	if (langCode == 'de') hourFormat = 'H [Uhr]';
-	else hourFormat = 'h A';
 
 	var new_chart = new Chart(ctx, {
 	    type: 'line',
@@ -112,9 +114,10 @@ function initializeChart(serial) {
 	        }]
 	    },
 	    options: {
+	    	responsive: true,
 	    	animation: {
 	    		duration: 1000,
-	    		easing: 'easeOutQuart'
+	    		easing: 'easeInOutSine'
 	    	},
 	    	maintainAspectRatio: false,
 	        scales: {
@@ -131,8 +134,11 @@ function initializeChart(serial) {
 	            	time: {
                         unit: 'hour',
                         displayFormats: {
-							hour: hourFormat
-						}
+							hour: ((langCode == 'de') ? 'H [Uhr]' : 'h A')
+						},
+						source: 'labels',
+						min: 0,
+						max: 0
                     },
 	                ticks: {
 	                    fontColor: 'rgba(255,255,255,1)'
@@ -211,8 +217,10 @@ function loadData(day) {
 			// update scale
 			var currentDayDate =  moment(currentDay).format('YYYY-MM-DD');
 
-			chart.options.scales.xAxes[0].ticks.suggestedMin = moment(currentDayDate).subtract(1, 'days');
-			chart.options.scales.xAxes[0].ticks.suggestedMax = moment(currentDayDate);
+
+			console.log(chart.options.scales.xAxes[0].ticks)
+			//chart.options.scales.xAxes[0].ticks.time.min = moment(currentDayDate).subtract(1, 'days');
+			//chart.options.scales.xAxes[0].ticks.time.max = moment(currentDayDate);
 
 			//console.log(moment(currentDayDate).subtract(1, 'day'), moment(currentDayDate))
 
@@ -256,6 +264,12 @@ function setCurrentDay(newDay) {
             $(this).css("visibility", "visible");
         });
 	}
+
+	// always show back
+	$('.icon-chevron-left').each(function() {
+            $(this).css("visibility", "visible");
+        });
+
 }
 
 function getDateStringForPrint() {
