@@ -39,12 +39,16 @@ div#content {
 div.chart {
 }
 
-div.chart .inverter-name {
-	float: left;
+div.chart .chart-date {
+	text-align: left;
 }
 
-div.chart .chart-date {
-	float: right;
+div.chart .inverter-name {
+	text-align: center;
+}
+
+div.chart .inverter-yield {
+	text-align: right;
 }
 
 div.chart-container {

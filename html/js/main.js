@@ -70,11 +70,12 @@ function initializeInverterCanvas() {
 		if ( !$( "#chart-"+inv.serial ).length ) {		// if chart not initialized
 
 			 var html = `
-				<div class='chart col-12'>
+				<div class='chart col-12' id='chart-`+inv.serial+`-col'>
 					<div class="row">
-						<div class="col-sm"><h5 class="inverter-name">`+inv.name+`</h5></div>
-						<div class="col-sm"></div>
 						<div class="col-sm"><h5 class="chart-date">`+getDateStringForPrint()+`</h5></div>
+						<div class="col-sm"><h5 class="inverter-name">`+ ((inv.serial != '0000') ? inv.name : '') +`</h5></div>
+						<div class="col-sm"><h5 class="inverter-yield"></h5></div>
+						
 					</div>
 					<div class="chart-container">
 						<i class="icon-chevron-left" style="visibility: hidden;"></i>
@@ -135,10 +136,7 @@ function initializeChart(serial) {
                         unit: 'hour',
                         displayFormats: {
 							hour: ((langCode == 'de') ? 'H [Uhr]' : 'h A')
-						},
-						source: 'labels',
-						min: 0,
-						max: 0
+						}
                     },
 	                ticks: {
 	                    fontColor: 'rgba(255,255,255,1)'
@@ -155,7 +153,12 @@ function initializeChart(serial) {
 	charts[serial] = new_chart;
 }
 
+var requesting = false;
 function loadData(day) {
+
+	// only one request at a time
+	if (requesting) return;
+	else requesting = true;
 
 	// request chart from day x in format 'YYYY-MM-DD'
 	if (day) setCurrentDay(day);
@@ -165,25 +168,38 @@ function loadData(day) {
 		day : currentDay 
 	};
 
-	$.ajax({ type: 'post', url: './update.php', data : request_data, success: function(resp) {
+	$.ajax({ 
+		type: 'post', 
+		url: './update.php', 
+		data : request_data, 
+		statusCode: {
+			500: function() {
+				alert("Script exhausted");
+				requesting = false;
+			}
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown) {
+     		//alert("Requesting data failed, please try again");
+     		requesting = false;
+		},
+		success: function(resp) {
 
 		var response = JSON.parse(resp); 
 
-		//console.log(response)
+		// current information
+		$("#dayTotal").text( addPrefix(response.today.dayTotal) + "Wh" );
+		$("#total").text( addPrefix(response.today.total) + "Wh" );
+		$("#co2").text( addPrefix(response.today.co2) + "T" );
 
-		setCurrentDay(response.day);
 
-		$('.chart-date').text(getDateStringForPrint());
-
-		$("#dayTotal").text( addPrefix(response.dayTotal) + "Wh" );
-		$("#total").text( addPrefix(response.total*1000) + "Wh" );
-		$("#co2").text( addPrefix(response.co2) + "t" );
+		// requested information
+		setCurrentDay(response.requested.day);
 
 		// update local stored inverters
 		inverters = [];
-		for (var name in response.inverters) {
-			var serial = response.inverters[name].serial;
-			inverters.push({ 'serial': serial, 'name': name});
+		for (var i=0; i<response.requested.inverters.length; i++) {
+			inv_data = response.requested.inverters[i];
+			inverters.push({ 'serial': inv_data.serial, 'name': inv_data.name});
 		}
 
 		// delete chart if inverter does no longer exist
@@ -195,44 +211,38 @@ function loadData(day) {
 		saveInvertersToCookie();
 		initializeInverterCanvas();
 
-		for (var i = 0; i < inverters.length; i++) {
+		// get data of requested day per inverter
+		response.requested.inverters.forEach(function (inv) {
 
-			var inv = inverters[i];
-
-			if (!response.inverters[inv.name].last24h) continue;
+			$("#chart-" + inv.serial + "-col .chart-date").text(getDateStringForPrint());
+			$("#chart-" + inv.serial + "-col .inverter-yield").text( addPrefix(inv.dayTotal) + "Wh");
 
 			var chart = charts[inv.serial];
-			var datapoints = response.inverters[inv.name].last24h;
-			var amount = lastDataSetLength[inv.serial];
+			var datapoints = inv.data;
 			
-			var label = datapoints.map(a => moment.unix(a.time)); // convert unix epch (seconds) to moment.js object
-			var data = datapoints.map(b => b.power);
-
-			// update labels and data
-			chart.data.labels = label;
-			chart.data.datasets.forEach((dataset) => {
-				dataset.data = data;
-			});
-
 			// update scale
 			var currentDayDate =  moment(currentDay).format('YYYY-MM-DD');
+			
+			chart.data.labels = [
+				moment(currentDayDate),											// from day start
+				moment(currentDayDate).add(1, 'days').subtract(1, 'minutes')	// to day end
+			];
 
+			datapoints.forEach(function(obj) {
+				obj.x = moment.unix(obj.time);
+				obj.y = obj.power;
+				delete obj.time;
+				delete obj.power;
+			})
 
-			console.log(chart.options.scales.xAxes[0].ticks)
-			//chart.options.scales.xAxes[0].ticks.time.min = moment(currentDayDate).subtract(1, 'days');
-			//chart.options.scales.xAxes[0].ticks.time.max = moment(currentDayDate);
-
-			//console.log(moment(currentDayDate).subtract(1, 'day'), moment(currentDayDate))
+			chart.data.datasets.forEach((dataset) => {
+				dataset.data = datapoints;
+			});
 
 			chart.update();
 
-			for (var j = 0; j < datapoints.length; j++) {
-				var d = datapoints[j];
-				//console.log(moment.unix(d.time).format('DD.MM.YYYY, HH:mm [Uhr]'), d.power)
-			}
-
-			//console.log(inv.serial, moment.unix(label[0]).format('DD.MM.YYYY, HH:mm:ss'), moment.unix(label[label.length-1]).format('DD.MM.YYYY, HH:mm:ss'));
-		}
+		});
+		requesting = false;
 	}
 	});
 }

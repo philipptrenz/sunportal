@@ -20,8 +20,8 @@
 			<div class="row">
 				<div class="status-container col-sm">
 					<div class="status">
-						<h5 class="lang en">daily yield</h5>
-						<h5 class="lang de">Tagesertrag</h5>
+						<h5 class="lang en">today's yield</h5>
+						<h5 class="lang de">Heutiger Ertrag</h5>
 						<p class="meter" id="dayTotal">loading ...</p>
 						<div class="line"></div>
 					</div>
