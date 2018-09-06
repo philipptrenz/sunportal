@@ -191,7 +191,6 @@ function loadData(day) {
 		$("#total").text( addPrefix(response.today.total) + "Wh" );
 		$("#co2").text( addPrefix(response.today.co2) + "T" );
 
-
 		// requested information
 		setCurrentDay(response.requested.day);
 
