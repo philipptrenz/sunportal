@@ -22,7 +22,10 @@
 					<div class="status">
 						<h5 class="lang en">today's yield</h5>
 						<h5 class="lang de">Heutiger Ertrag</h5>
-						<p class="meter" id="dayTotal">loading ...</p>
+						<p class="meter" id="dayTotal">
+							<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+							<span class="sr-only">Loading ...</span>
+						</p>
 						<div class="line"></div>
 					</div>
 				</div>
@@ -30,7 +33,10 @@
 					<div class="status">
 						<h5 class="lang en">total yield</h5>
 						<h5 class="lang de">Gesamtertrag</h5>
-						<p class="meter" id="total">loading ...</p>
+						<p class="meter" id="total">
+							<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+							<span class="sr-only">Loading ...</span>
+						</p>
 						<div class="line"></div>
 					</div>
 				</div>
@@ -38,7 +44,10 @@
 					<div class="status">
 						<h5 class="lang en">CO<sub>2</sub> savings</h5>
 						<h5 class="lang de">CO<sub>2</sub>-Einsparung</h5>
-						<p class="meter" id="co2">loading ...</p>
+						<p class="meter" id="co2">
+							<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+							<span class="sr-only">Loading ...</span>
+						</p>
 						<div class="line"></div>
 					</div>
 				</div>

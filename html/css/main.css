@@ -57,11 +57,11 @@ div.chart-container {
 	width: 100%;
 }
 
-div.chart-container > i, .chart-container-inner {
+div.chart-container > i.navigation-chevrons, .chart-container-inner {
 	float: left;
 }
 
-div.chart-container > i {
+div.chart-container > i.navigation-chevrons {
 	padding: 1vw;
 	display: flex;
 	flex-direction: column;
@@ -74,7 +74,7 @@ div.chart-container > i {
     -webkit-transition: opacity .45s ease-in-out;
 }
 
-div.chart-container > i:hover {
+div.chart-container > i.navigation-arrows:hover {
 	opacity: 0.6;
     transition: opacity .45s ease-in-out;
     -moz-transition: opacity .45s ease-in-out;

@@ -97,21 +97,35 @@
 			WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN $requestedDayStart AND $requestedDayEnd );
 
 		";
-
-		//WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM (SELECT TimeStamp FROMSpotData WHERE TimeStamp BETWEEN $requestedDayStart AND $requestedDayEnd ));
-
 		$rs = $db->query($query);
 		$row = $rs->fetchArray(SQLITE3_ASSOC);	
 		$dayTotal = $row['EToday'];
 
 
+		// check if there is data available for previous and next day
+		$query = "
+			SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+			FROM (
+				SELECT TimeStamp
+				FROM DayData
+				GROUP BY TimeStamp
+				HAVING Count(*)=" . sizeof($inverters) . "
+			);
+		";
+		$rs = $db->query($query);
+		$row = $rs->fetchArray(SQLITE3_ASSOC);
+		$hasPrevious = $row['Min'] < $requestedDayStart ? true : false;
+		$hasNext = $row['Max'] > $requestedDayEnd ? true : false;
+		
 		$invDat = array(
 			"serial" => "0000", 
 			"name" => "all",
 			"day" => $day, 
 			"data" => $table, 
-			"dayTotal" => $dayTotal
-		);
+			"dayTotal" => $dayTotal,
+			"hasPrevious" => $hasPrevious,
+			"hasNext" => $hasNext
+ 		);
 		array_push($inverter_data, $invDat);
 	}
 

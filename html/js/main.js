@@ -1,6 +1,6 @@
 
 var maxDecimals = 2;
-var reloadTime = 10 * 1000;		// reload once a minute
+var reloadTime = 120 * 1000;		// reload every 2 minutes
 var lastDataSetLength = [];
 var inverters = [];
 var charts = [];
@@ -33,13 +33,13 @@ $(document).ready(function () {
 
 	});
 
-	$('.icon-chevron-left').click(function() {
+	$('.navigation-left').click(function() {
 		var canvas = $(this).parent().find( "canvas" )[0];
 		var inv = $(canvas).attr('id').replace('chart-', '');
 		navigateOneDay(currentDay, 'backwards');
 	});
 
-	$('.icon-chevron-right').click(function() {
+	$('.navigation-right').click(function() {
 		var canvas = $(this).parent().find( "canvas" )[0];
 		var inv = $(canvas).attr('id').replace('chart-', '');
 		navigateOneDay(currentDay, 'forwards');
@@ -72,17 +72,22 @@ function initializeInverterCanvas() {
 			 var html = `
 				<div class='chart col-12' id='chart-`+inv.serial+`-col'>
 					<div class="row">
-						<div class="col-sm"><h5 class="chart-date">`+getDateStringForPrint()+`</h5></div>
+						<div class="col-sm"><h5 class="chart-date"></h5></div>
 						<div class="col-sm"><h5 class="inverter-name">`+ ((inv.serial != '0000') ? inv.name : '') +`</h5></div>
-						<div class="col-sm"><h5 class="inverter-yield"></h5></div>
+						<div class="col-sm">
+							<h5 class="inverter-yield">
+								<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+								<span class="sr-only">Loading ...</span>
+							</h5>
+						</div>
 						
 					</div>
 					<div class="chart-container">
-						<i class="icon-chevron-left" style="visibility: hidden;"></i>
+						<i class="fa fa-chevron-left navigation-chevrons navigation-left" style="visibility: hidden;"></i>
 						<div class="chart-container-inner">
 							<canvas id='`+`chart-`+inv.serial+`' class='chart-canvas' height='200px'/>
 						</div>
-						<i class="icon-chevron-right" style="visibility: hidden;"></i>
+						<i class="fa fa-chevron-right navigation-chevrons navigation-right" style="visibility: hidden;"></i>
 					</div>
 				</div>
 			 `;
@@ -164,25 +169,29 @@ function loadData(day) {
 		day : currentDay 
 	};
 
-	//console.log("Requesting data for "+currentDay+" ...");
+//	$('.chart-date').each(function() {
+//		$(this).text('');
+//	});
+	$('.inverter-yield').each(function() {
+		if (! $(this).has('i.fa-circle-o-notch').length) 
+			$(this).html('<i class="fa fa-circle-o-notch fa-spin fa-fw"></i><span class="sr-only">Loading ...</span>');
+	});
 
+	//console.log("Requesting data for "+currentDay+" ...");
 	$.ajax({ 
 		type: 'post', 
 		url: './update.php', 
 		data : request_data, 
-		statusCode: {
-			500: function() {
-				alert("Script exhausted");
-				requesting = false;
-			}
-		},
 		error: function(XMLHttpRequest, textStatus, errorThrown) {
-     		//alert("Requesting data failed, please try again");
+  			//alert("Something went wrong ...");
      		requesting = false;
+     		loadData(); 		// try again, recursively
 		},
 		success: function(resp) {
 
 		var response = JSON.parse(resp); 
+
+		//console.log(response.requested.inverters[0])
 
 		// current information
 		$("#dayTotal").text( addPrefix(response.today.dayTotal) + "Wh" );
@@ -213,6 +222,14 @@ function loadData(day) {
 
 			$("#chart-" + inv.serial + "-col .chart-date").text(getDateStringForPrint());
 			$("#chart-" + inv.serial + "-col .inverter-yield").text( addPrefix(inv.dayTotal) + "Wh");
+
+			// show or hide navigation arrows
+			$("#chart-" + inv.serial + "-col .navigation-right").each(function() {
+				$(this).css("visibility", (inv.hasNext ? "visible" : "hidden"));
+			});
+			$("#chart-" + inv.serial + "-col .navigation-left").each(function() {
+				$(this).css("visibility", (inv.hasPrevious ? "visible" : "hidden"));
+			});
 
 			var chart = charts[inv.serial];
 			var datapoints = inv.data;
@@ -262,22 +279,6 @@ function setCurrentDay(newDay) {
 	else currentDay = new Date().toISOString().slice(0,10);
 
 	var date = moment(currentDay).format('YYYY-MM-DD');
-
-	// hide right arrow button if currentDay is today
-	if (moment(date).isSame(new Date(), "day")) {
-		$('.icon-chevron-right').each(function() {
-            $(this).css("visibility", "hidden");
-        });
-	} else {
-		$('.icon-chevron-right').each(function() {
-            $(this).css("visibility", "visible");
-        });
-	}
-
-	// always show back
-	$('.icon-chevron-left').each(function() {
-        $(this).css("visibility", "visible");
-    });
 
     return currentDay;
 
