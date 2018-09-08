@@ -8,10 +8,10 @@ _sunportal_ is a web based visualisation tool to display data of SMA solar inver
 
 First install and configure SBFspot ([see here](https://github.com/SBFspot/SBFspot/wiki)), use the sqlite database option.
 
-Then add a cronjob for SBFspot to run every minute or so. Execute `sudo crontab -e`, choose your preferred editor and add the following line:
+Then add a cronjob for SBFspot to run every 5 minutes. Execute `sudo crontab -e`, choose your preferred editor and add the following line:
 
 ```
-* * * * * /usr/local/bin/sbfspot.3/SBFspot -finq -nocsv
+*/5 * * * * /usr/local/bin/sbfspot.3/SBFspot -finq -nocsv > /dev/null
 ```
 
 After that install _sunportal_:
