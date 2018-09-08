@@ -57,7 +57,7 @@
 
 			<div class="row">
 				<div class="footer-container col-12">
-					<a href="https://github.com/philipptrenz/sunportal"><i class="icon-github-sign" style="padding-right: 10px;"></i>github.com/philipptrenz/sunportal</a></div>
+					<a href="https://github.com/philipptrenz/sunportal"><i class="fa fa-github fa-2" aria-hidden="true" style="padding-right: 10px;"></i>github.com/philipptrenz/sunportal</a></div>
 			</div>
 		</div>
 	</div>
