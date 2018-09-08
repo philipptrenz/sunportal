@@ -1,6 +1,7 @@
 
 var maxDecimals = 2;
 var reloadTime = 120 * 1000;		// reload every 2 minutes
+var reloadTimer;
 var lastDataSetLength = [];
 var inverters = [];
 var charts = [];
@@ -29,7 +30,6 @@ $(document).ready(function () {
 		/* ----- load data from database via ajax ------ */
 
 		loadData();
-		window.setInterval(loadData, reloadTime);	
 
 	});
 
@@ -165,6 +165,8 @@ function loadData(day) {
 	if (requesting) return;
 	else requesting = true;
 
+	clearTimeout(reloadTimer);
+
 	var request_data = { 
 		day : currentDay 
 	};
@@ -256,7 +258,9 @@ function loadData(day) {
 			chart.update();
 
 		});
+
 		requesting = false;
+		reloadTimer = setTimeout(loadData, reloadTime);
 	}
 	});
 }
