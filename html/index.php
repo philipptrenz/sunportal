@@ -7,8 +7,14 @@
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
-	<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
-	<link rel="icon" href="img/favicon.ico" type="image/x-icon">
+	<link rel="icon" type="image/x-icon" href="img/favicon.ico">
+	<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="img/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="img/favicon-32x32.png" sizes="32x32">
+	<link rel="icon" type="image/png" href="img/favicon-64x64.png" sizes="64x64">
+	<link rel="icon" type="image/png" href="img/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/png" href="img/favicon-128x128.png" sizes="128x128">
+
 </head>
 
 <body>
