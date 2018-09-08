@@ -1,6 +1,6 @@
 # sunportal
 
-_sunportal_ is a web based visualisation tool to display data of SMA solar inverters. It is based on the database of [SBFspot](https://github.com/SBFspot/SBFspot). _sunportal_ displays today's and total yield as well as CO2 savings and charts of previous days on a web page. It runs on a Raspberry Pi and can handle multiple inverters in one Speedwire or Bluetooth(R) network.
+_sunportal_ is a web based visualisation tool to display data of SMA solar inverters. It is based on the database of [SBFspot](https://github.com/SBFspot/SBFspot) and shows charts of this and previous days on a website. It runs on a Raspberry Pi and can handle multiple inverters in one Speedwire or Bluetooth(R) network.
 
 ![sunportal example image](/html/img/sunportal.jpg?raw=true)
 
