@@ -6,9 +6,9 @@ _sunportal_ is a web based visualisation tool to display data of SMA solar inver
 
 ## Installation on a Raspberry Pi
 
-First install and configure SBFspot ([see here](https://github.com/SBFspot/SBFspot/wiki)), use the sqlite database option.
+First install and configure SBFspot as described [here](https://github.com/SBFspot/SBFspot/wiki/Installation-Linux-SQLite#sbfspot-with-sqlite), the _SBFspotUploadDaemon_ is not required. 
 
-Then add a cronjob for SBFspot to run every 5 minutes. Execute `sudo crontab -e`, choose your preferred editor and add the following line:
+Also add a cronjob for SBFspot to run every 5 minutes. Execute `sudo crontab -e`, choose your preferred editor and add the following line:
 
 ```
 */5 * * * * /usr/local/bin/sbfspot.3/SBFspot -finq -nocsv > /dev/null
