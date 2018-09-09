@@ -4,7 +4,6 @@ var reloadTime = 120 * 1000;		// reload every 2 minutes
 var reloadTimer;
 var lastDataSetLength = [];
 var inverters = [];
-var charts = [];
 var langCode = "";
 
 var currentDay = setCurrentDay(); // today in format 'YYYY-MM-DD'
@@ -17,6 +16,7 @@ $(document).ready(function () {
 	if (usrLang.indexOf('de') !== -1) langCode = 'de';
 	else langCode = 'en';
 	$('body').attr( "id",'lang-'+langCode);
+	moment.locale(langCode);
 
 	/* ----- load inverters from cookie ------ */
 
@@ -35,13 +35,13 @@ $(document).ready(function () {
 
 	$('.navigation-left').click(function() {
 		var canvas = $(this).parent().find( "canvas" )[0];
-		var inv = $(canvas).attr('id').replace('chart-', '');
+		var inv = $(canvas).attr('id').replace('chart-day-', '');
 		navigateOneDay(currentDay, 'backwards');
 	});
 
 	$('.navigation-right').click(function() {
 		var canvas = $(this).parent().find( "canvas" )[0];
-		var inv = $(canvas).attr('id').replace('chart-', '');
+		var inv = $(canvas).attr('id').replace('chart-day-', '');
 		navigateOneDay(currentDay, 'forwards');
 	});
 
@@ -64,13 +64,13 @@ function addPrefix(number) {
 function initializeInverterCanvas() {
 
 	// initialize charts for inverters if not already initialized
-	for (var i=0; i<inverters.length; i++) {
-		var inv = inverters[i];
+	for (x in inverters) {
+		var inv = inverters[x];
 
-		if ( !$( "#chart-"+inv.serial ).length ) {		// if chart not initialized
+		if ( !$( "#chart-day-"+x ).length ) {		// if chart not initialized
 
-			 var html = `
-				<div class='chart col-12' id='chart-`+inv.serial+`-col'>
+			var htmlDayChart = `
+				<div class='chart col-12' id='chart-day-`+inv.serial+`-col'>
 					<div class="row">
 						<div class="col-sm"><h5 class="chart-date"></h5></div>
 						<div class="col-sm"><h5 class="inverter-name">`+ ((inv.serial != '0000') ? inv.name : '') +`</h5></div>
@@ -85,7 +85,30 @@ function initializeInverterCanvas() {
 					<div class="chart-container">
 						<i class="fa fa-chevron-left navigation-chevrons navigation-left" style="visibility: hidden;"></i>
 						<div class="chart-container-inner">
-							<canvas id='`+`chart-`+inv.serial+`' class='chart-canvas' height='200px'/>
+							<canvas id='`+`chart-day-`+inv.serial+`' class='chart-canvas' height='200px'/>
+						</div>
+						<i class="fa fa-chevron-right navigation-chevrons navigation-right" style="visibility: hidden;"></i>
+					</div>
+				</div>
+			 `;
+
+			 var htmlMonthChart = `
+				<div class='chart col-12' id='chart-month-`+inv.serial+`-col'>
+					<div class="row">
+						<div class="col-sm"><h5 class="chart-date"></h5></div>
+						<div class="col-sm"><h5 class="inverter-name">`+ ((inv.serial != '0000') ? inv.name : '') +`</h5></div>
+						<div class="col-sm">
+							<h5 class="inverter-yield">
+								<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+								<span class="sr-only">Loading ...</span>
+							</h5>
+						</div>
+						
+					</div>
+					<div class="chart-container">
+						<i class="fa fa-chevron-left navigation-chevrons navigation-left" style="visibility: hidden;"></i>
+						<div class="chart-container-inner">
+							<canvas id='`+`chart-month-`+inv.serial+`' class='chart-canvas' height='200px'/>
 						</div>
 						<i class="fa fa-chevron-right navigation-chevrons navigation-right" style="visibility: hidden;"></i>
 					</div>
@@ -93,20 +116,20 @@ function initializeInverterCanvas() {
 			 `;
 
 
-			$( "#charts" ).append( html );
+			$( "#charts" ).append( htmlDayChart );
+			$( "#charts" ).append( htmlMonthChart );
 
-			initializeChart(inv.serial);
+			initializeCharts(inv.serial);
 			lastDataSetLength[inv.serial] = 0;
 		}
 	}
 }
 
 
-function initializeChart(serial) {
-	var ctx = document.getElementById( "chart-"+serial ).getContext('2d');
-	var hourFormat;
+function initializeCharts(serial) {
 
-	var new_chart = new Chart(ctx, {
+	var ctx_day = document.getElementById( "chart-day-"+serial ).getContext('2d');
+	var new_day_chart = new Chart(ctx_day, {
 	    type: 'line',
 	    data: {
 	        labels: [],
@@ -155,7 +178,60 @@ function initializeChart(serial) {
 	        }
 	    }
 	});
-	charts[serial] = new_chart;
+
+	var ctx_month = document.getElementById( "chart-month-"+serial ).getContext('2d');
+	var new_month_chart = new Chart(ctx_month, {
+	    type: 'bar',
+	    data: {
+	        labels: [],
+	        datasets: [{
+	            label: 'Wh',
+	            data: [],
+	            backgroundColor: 'rgba(227,6,19,0.3)',
+	            borderColor: 'rgba(227,6,19,1)',
+	            borderWidth: 1,
+	            pointRadius: 0
+	        }]
+	    },
+	    options: {
+	    	responsive: true,
+	    	animation: {
+	    		duration: 1000,
+	    		easing: 'easeInOutSine'
+	    	},
+	    	maintainAspectRatio: false,
+	        scales: {
+	            yAxes: [{
+	                ticks: {
+	                    beginAtZero: true,
+	                    fontColor: 'rgba(255,255,255,1)',
+	                    fontSize: 14
+	                }
+	            }],
+	            xAxes: [{
+	            	display: true,
+	            	type: 'time',
+	            	time: {
+                        unit: 'day'
+                    },
+	                ticks: {
+	                    fontColor: 'rgba(255,255,255,1)'
+	                }
+	            }]
+	        },
+	        legend: {
+	        	labels: {
+	        		fontColor: 'rgba(255,255,255,1)'
+	        	}
+	        }
+	    }
+	});;
+
+
+	//charts[serial] = new_chart;
+
+
+	inverters[String(serial)].charts = { day: new_day_chart, month: new_month_chart };
 }
 
 var requesting = false;
@@ -168,7 +244,7 @@ function loadData(day) {
 	clearTimeout(reloadTimer);
 
 	var request_data = { 
-		day : currentDay 
+		date: currentDay 
 	};
 
 //	$('.chart-date').each(function() {
@@ -193,7 +269,7 @@ function loadData(day) {
 
 		var response = JSON.parse(resp); 
 
-		//console.log(response.requested.inverters[0])
+		console.log(response)
 
 		// current information
 		$("#dayTotal").text( addPrefix(response.today.dayTotal) + "Wh" );
@@ -201,18 +277,18 @@ function loadData(day) {
 		$("#co2").text( addPrefix(response.today.co2) + "T" );
 
 		// requested information
-		setCurrentDay(response.requested.day);
+		setCurrentDay(response.requested.date);
 
 		// update local stored inverters
 		inverters = [];
 		for (var i=0; i<response.requested.inverters.length; i++) {
-			inv_data = response.requested.inverters[i];
-			inverters.push({ 'serial': inv_data.serial, 'name': inv_data.name});
+			var inv_data = response.requested.inverters[i];
+			inverters[String( inv_data.serial )] = { serial: inv_data.serial, name: inv_data.name };
 		}
 
 		// delete chart if inverter does no longer exist
 		$('canvas').each(function() {
-			var id = $(this).attr('id').replace('chart-', '');
+			var id = $(this).attr('id').replace('chart-day-', '');
 			if (!id in inverters) $(this).parent().remove();
 		});
 
@@ -222,40 +298,95 @@ function loadData(day) {
 		// get data of requested day per inverter
 		response.requested.inverters.forEach(function (inv) {
 
-			$("#chart-" + inv.serial + "-col .chart-date").text(getDateStringForPrint());
-			$("#chart-" + inv.serial + "-col .inverter-yield").text( addPrefix(inv.dayTotal) + "Wh");
+			var dayChart = inverters[inv.serial].charts.day;
+			var monthChart = inverters[inv.serial].charts.month;
 
-			// show or hide navigation arrows
-			$("#chart-" + inv.serial + "-col .navigation-right").each(function() {
-				$(this).css("visibility", (inv.hasNext ? "visible" : "hidden"));
-			});
-			$("#chart-" + inv.serial + "-col .navigation-left").each(function() {
-				$(this).css("visibility", (inv.hasPrevious ? "visible" : "hidden"));
-			});
 
-			var chart = charts[inv.serial];
-			var datapoints = inv.data;
-			
-			// update scale
 			var currentDayDate =  moment(currentDay).format('YYYY-MM-DD');
-			
-			chart.data.labels = [
-				moment(currentDayDate),											// from day start
-				moment(currentDayDate).add(1, 'days').subtract(1, 'minutes')	// to day end
-			];
 
-			datapoints.forEach(function(obj) {
-				obj.x = moment.unix(obj.time);
-				obj.y = obj.power;
-				delete obj.time;
-				delete obj.power;
-			})
+			{	// update day chart
 
-			chart.data.datasets.forEach((dataset) => {
-				dataset.data = datapoints;
-			});
+				$("#chart-day-" + inv.serial + "-col .chart-date").text(getDayStringForPrint());
+				$("#chart-day-" + inv.serial + "-col .inverter-yield").text( addPrefix(inv.day.total) + "Wh");
 
-			chart.update();
+				// show or hide navigation arrows on day chart
+				$("#chart-day-" + inv.serial + "-col .navigation-right").each(function() {
+					$(this).css("visibility", (inv.day.hasNext ? "visible" : "hidden"));
+				});
+				$("#chart-day-" + inv.serial + "-col .navigation-left").each(function() {
+					$(this).css("visibility", (inv.day.hasPrevious ? "visible" : "hidden"));
+				});
+
+				var datapoints = inv.day.data;
+				
+				
+				// update scale
+				dayChart.data.labels = [
+					moment.unix(inv.day.interval.from),
+					moment.unix(inv.day.interval.to)
+				];
+
+				datapoints.forEach(function(obj) {
+					obj.x = moment.unix(obj.time);
+					obj.y = obj.power;
+					delete obj.time;
+					delete obj.power;
+				})
+
+				dayChart.data.datasets.forEach((dataset) => {
+					dataset.data = datapoints;
+				});
+
+				dayChart.update();
+
+			}
+
+			{	// update day chart
+
+				$("#chart-month-" + inv.serial + "-col .chart-date").text(getMonthStringForPrint());
+				$("#chart-month-" + inv.serial + "-col .inverter-yield").text( addPrefix(inv.month.total) + "Wh");
+
+				// show or hide navigation arrows on day chart
+				$("#chart-day-" + inv.serial + "-col .navigation-right").each(function() {
+					$(this).css("visibility", (inv.month.hasNext ? "visible" : "hidden"));
+				});
+				$("#chart-day-" + inv.serial + "-col .navigation-left").each(function() {
+					$(this).css("visibility", (inv.month.hasPrevious ? "visible" : "hidden"));
+				});
+
+				var datapoints = inv.month.data;
+				
+				
+				// update scale
+				monthChart.data.labels = [
+					moment.unix(inv.month.interval.from),
+					moment.unix(inv.month.interval.to)
+				];
+
+				datapoints.forEach(function(obj) {
+					obj.x = moment.unix(obj.time);
+					obj.y = obj.power;
+					delete obj.time;
+					delete obj.power;
+				})
+
+				monthChart.data.datasets.forEach((dataset) => {
+					dataset.data = datapoints;
+				});
+
+				monthChart.update();
+
+			}
+
+
+
+
+
+
+
+
+
+
 
 		});
 
@@ -288,26 +419,28 @@ function setCurrentDay(newDay) {
 
 }
 
-function getDateStringForPrint() {
+function getDayStringForPrint() {
+	var date = moment(currentDay).format('YYYY-MM-DD');
 	if (currentDay) {
 		if (langCode == 'de' ) {
-			return currentDay.replace( /(\d{4})-(\d{2})-(\d{2})/, "$3.$2.$1");
+			return moment(date).format('DD.MM.YYYY');
 		} else {
-			return currentDay.replace('-', '/').replace('-', '/');
+			return moment(date).format('YYYY/MM/DD');
 		}		
 	} else {
 		return '';
-	}
-
-	
+	}	
 }
 
-function containsInverter(serial) {
-	for (var i=0; i<inverters.length; i++) {
-		if (inverters[i].serial == serial) return true;
+function getMonthStringForPrint() {
+	var date = moment(currentDay).format('YYYY-MM-DD');
+	if (currentDay) {
+		return moment(date).format('MMMM YYYY');		
+	} else {
+		return '';
 	}
-	return false;
 }
+
 
 function saveInvertersToCookie() {
 	var json_str = JSON.stringify(inverters);
