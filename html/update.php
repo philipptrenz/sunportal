@@ -88,7 +88,6 @@
 			FROM DayData 
 			WHERE TimeStamp BETWEEN $requestedDayStart AND $requestedDayEnd 
 			GROUP BY TimeStamp
-			HAVING Count(*)=" . sizeof($inverters) . ";
 		";
 
 		$rs = $db->query($query);
@@ -117,7 +116,6 @@
 				SELECT TimeStamp
 				FROM DayData
 				GROUP BY TimeStamp
-				HAVING Count(*)=" . sizeof($inverters) . "
 			);
 		";
 		$rs = $db->query($query);
@@ -137,7 +135,6 @@
 			FROM MonthData 
 			WHERE TimeStamp BETWEEN $requestedMonthStart AND $requestedMonthEnd
 			GROUP BY TimeStamp
-			HAVING Count(*)=" . sizeof($inverters) . ";
 		";
 
 		$rs = $db->query($query);
@@ -158,7 +155,6 @@
 				SELECT TimeStamp
 				FROM MonthData
 				GROUP BY TimeStamp
-				HAVING Count(*)=" . sizeof($inverters) . "
 			);
 		";
 		$rs = $db->query($query);
