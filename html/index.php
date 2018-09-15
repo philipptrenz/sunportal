@@ -27,10 +27,10 @@
 				<div class="status-container col-sm">
 					<div class="status">
 						<h5 class="lang en">today's yield</h5>
-						<h5 class="lang de">Heutiger Ertrag</h5>
+						<h5 class="lang de">heutiger ertrag</h5>
 						<p class="meter" id="dayTotal">
 							<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
-							<span class="sr-only">Loading ...</span>
+							<span class="sr-only">loading ...</span>
 						</p>
 						<div class="line"></div>
 					</div>
@@ -38,7 +38,7 @@
 				<div class="status-container col-sm">
 					<div class="status">
 						<h5 class="lang en">total yield</h5>
-						<h5 class="lang de">Gesamtertrag</h5>
+						<h5 class="lang de">gesamtertrag</h5>
 						<p class="meter" id="total">
 							<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
 							<span class="sr-only">Loading ...</span>
@@ -49,10 +49,10 @@
 				<div class="status-container col-sm">
 					<div class="status">
 						<h5 class="lang en">CO<sub>2</sub> savings</h5>
-						<h5 class="lang de">CO<sub>2</sub>-Einsparung</h5>
+						<h5 class="lang de">CO<sub>2</sub>-einsparung</h5>
 						<p class="meter" id="co2">
 							<i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
-							<span class="sr-only">Loading ...</span>
+							<span class="sr-only">loading ...</span>
 						</p>
 						<div class="line"></div>
 					</div>
@@ -63,11 +63,13 @@
 
 			<div class="row">
 				<div class="footer-container col-12">
-					<a href="https://github.com/philipptrenz/sunportal"><i class="fa fa-github fa-2" aria-hidden="true" style="padding-right: 10px;"></i>github.com/philipptrenz/sunportal</a></div>
+					<a href="https://github.com/philipptrenz/sunportal">
+						<i class="fa fa-github fa-2" aria-hidden="true" style="padding-right: 10px;"></i>github.com/philipptrenz/sunportal
+					</a>
+				</div>
 			</div>
 		</div>
 	</div>
-
 
 	<script src="./js/jquery-3.3.1.js"></script>
 	<script src="./js/moment.min.js"></script>

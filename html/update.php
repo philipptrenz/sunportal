@@ -105,7 +105,7 @@
 
 		";
 		$rs = $db->query($query);
-		$row = $rs->fetchArray(SQLITE3_ASSOC);	
+		$row = $rs->fetchArray(SQLITE3_ASSOC);
 		$dayTotal = $row['EToday'];
 
 
