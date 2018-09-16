@@ -1,0 +1,6 @@
+{
+	"database": {
+		"path": "./SBFspot.db"
+	},
+	"co2_avoidance_factor": 0.7
+}
