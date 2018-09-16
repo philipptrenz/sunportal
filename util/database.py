@@ -85,12 +85,20 @@ class Database():
         for row in self.c.execute(query % (day_start, day_end)):
             data['data'].append({ 'time': row[0], 'power': row[1] })
 
-        query = '''
-            SELECT SUM(EToday) as EToday
-			FROM SpotData
-			WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN %s AND %s );
-             '''
 
+        if self.get_datetime(date).date() == datetime.today().date():
+            query = '''
+                SELECT SUM(EToday) as EToday
+                FROM SpotData
+                WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN %s AND %s );
+                 '''
+        else:
+            query = '''
+                SELECT SUM(DayYield) AS Power 
+                FROM MonthData 
+                WHERE TimeStamp BETWEEN %s AND %s
+                GROUP BY TimeStamp
+                '''
         self.c.execute(query % (day_start, day_end))
         data['total'] = self.c.fetchone()[0]
 
@@ -141,6 +149,9 @@ class Database():
         data['hasNext'] = (last_data > month_end)
 
         return data
+
+    def get_datetime(self, date):
+        return datetime.strptime(date, "%Y-%m-%d")
 
     def get_epoch(self, date):
         epoch = datetime(1970, 1, 1)
