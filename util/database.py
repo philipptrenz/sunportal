@@ -73,7 +73,6 @@ class Database():
 
         day_start, day_end = self.get_epoch_day(date)
         data['interval'] = {'from': day_start, 'to': day_end}
-        day_total = 0
 
         query = '''
             SELECT TimeStamp, SUM(Power) AS Power 
@@ -85,18 +84,15 @@ class Database():
         data['data'] = list()
         for row in self.c.execute(query % (day_start, day_end)):
             data['data'].append({ 'time': row[0], 'power': row[1] })
-            day_total += row[1]
 
+        query = '''
+            SELECT SUM(EToday) as EToday
+			FROM SpotData
+			WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN %s AND %s );
+             '''
 
-#        query = '''
-#            SELECT SUM(EToday) as EToday
-#			FROM SpotData
-#			WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN %s AND %s );
-#            '''
-#
-#        self.c.execute(query % (day_start, day_end))
-#        data['total'] = self.c.fetchone()[0]
-        data['total'] = day_total
+        self.c.execute(query % (day_start, day_end))
+        data['total'] = self.c.fetchone()[0]
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
