@@ -1,0 +1,6 @@
+static/css/bootstrap.min.css* linguist-vendored
+static/css/font-awesome.min.css linguist-vendored
+static/fonts/* linguist-vendored
+static/js/chart.js linguist-vendored
+static/js/jquery-*.js linguist-vendored
+static/js/moment.min.js linguist-vendored
