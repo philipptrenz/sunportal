@@ -159,7 +159,10 @@ function initializeCharts(serial) {
 	                    beginAtZero: true,
 	                    fontColor: 'rgba(255,255,255,1)',
 	                    fontSize: 14
-	                }
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					}
 	            }],
 	            xAxes: [{
 	            	display: true,
@@ -172,14 +175,28 @@ function initializeCharts(serial) {
                     },
 	                ticks: {
 	                    fontColor: 'rgba(255,255,255,1)'
-	                }
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					}
 	            }]
 	        },
 	        legend: {
 	        	labels: {
 	        		fontColor: 'rgba(255,255,255,1)'
 	        	}
-	        }
+	        },
+			tooltips: {
+				callbacks: {
+					title: function(t, d) {
+						if (langCode == 'de')
+							return moment(t[0].xLabel).format('HH:mm [Uhr]');
+						else
+							return moment(t[0].xLabel).format('hh:mm A');
+
+					}
+				}
+			}
 	    }
 	});
 
@@ -210,7 +227,10 @@ function initializeCharts(serial) {
 	                    beginAtZero: true,
 	                    fontColor: 'rgba(255,255,255,1)',
 	                    fontSize: 14
-	                }
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					}
 	            }],
 	            xAxes: [{
 	            	display: true,
@@ -220,14 +240,27 @@ function initializeCharts(serial) {
                     },
 	                ticks: {
 	                    fontColor: 'rgba(255,255,255,1)'
-	                }
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					}
 	            }]
 	        },
 	        legend: {
 	        	labels: {
 	        		fontColor: 'rgba(255,255,255,1)'
 	        	}
-	        }
+	        },
+			tooltips: {
+				callbacks: {
+					title: function(t, d) {
+						if (langCode == 'de')
+							return moment(t[0].xLabel).format('DD.MM.YYYY');
+						else
+							return moment(t[0].xLabel).format('YYYY/MM/DD');
+					}
+				}
+			}
 	    }
 	});;
 
@@ -337,7 +370,7 @@ function loadData(day) {
 
 			}
 
-			{	// update day chart
+			{	// update month chart
 
 				$("#chart-month-" + inv.serial + "-col .chart-date").text(getMonthStringForPrint());
 				$("#chart-month-" + inv.serial + "-col .inverter-yield").text( addPrefix(inv.month.total) + "Wh");
@@ -360,7 +393,7 @@ function loadData(day) {
 				];
 
 				datapoints.forEach(function(obj) {
-					obj.x = moment.unix(obj.time);
+					obj.x = moment.unix(obj.time).subtract(1, 'days');
 					obj.y = obj.power;
 					delete obj.time;
 					delete obj.power;
