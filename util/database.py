@@ -6,9 +6,10 @@ from datetime import datetime, date, time, timedelta
 
 class Database():
 
-    def __init__(self, db_file='./SBFspot.db', co2_mult=0.7):
-        self.co2_mult = co2_mult
-        self.db = sqlite3.connect(db_file, check_same_thread=False)
+    def __init__(self, config):
+        self.config = config
+        self.co2_mult = self.config.get_co2_avoidance_factor()
+        self.db = sqlite3.connect(self.config.get_database_path(), check_same_thread=False)
         self.c = self.db.cursor()
 
     def get(self, date):

@@ -3,3 +3,4 @@
 *.db-wal
 .idea/
 __pycache__/
+config.json

@@ -16,3 +16,9 @@ class Config():
 
     def get_config(self):
         return self.config
+
+    def get_database_path(self):
+        return self.config["database"]["path"]
+
+    def get_co2_avoidance_factor(self):
+        return self.config["co2_avoidance_factor"]

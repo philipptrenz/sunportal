@@ -8,8 +8,8 @@ from util.config import Config
 from util.database import Database
 
 
-config = Config().get_config()
-db = Database(db_file=config["database"]["path"])
+config = Config()
+db = Database(config=config)
 app = Flask(__name__)
 
 
