@@ -29,7 +29,10 @@ cd sunportal
 sudo python3 sunportal.py
 ```
 
-If you want to run sunportal as a service on boot:
+Open a browser and navigate to the IP address of the Raspberry Pi to see the website.
+
+
+To run _sunportal_ on boot:
 ```bash
 # make the scripts executable
 sudo chmod 755 sunportal.py
@@ -40,7 +43,7 @@ sudo cp sunportal.sh /etc/init.d
 sudo update-rc.d sunportal.sh defaults
 
 ```
-Now you can start and stop your script via `sudo service 433PyApi start` or `stop` and it automatically starts on boot.
+Now _sunportal_ can be controlled as a service (`sudo service sunportal status`) and it automatically starts on boot.
 
 ## Disclaimer
 
