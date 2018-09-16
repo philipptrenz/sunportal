@@ -39,8 +39,8 @@ sudo chmod 755 sunportal.py
 sudo chmod 755 sunportal.sh
 
 # add the bash script to the service folder
-sudo cp sunportal.sh /etc/init.d
-sudo update-rc.d sunportal.sh defaults
+sudo cp sunportal.sh /etc/init.d/sunportal
+sudo update-rc.d sunportal defaults
 
 ```
 Now _sunportal_ can be controlled as a service (`sudo service sunportal status`) and it automatically starts on boot.
