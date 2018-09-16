@@ -1,8 +1,0 @@
-# Hide files of type .db from listing
-IndexIgnore *.db
-
-# Deny access to database files
-<FilesMatch "\.db$">
-Order allow, deny
-Deny from all
-</FilesMatch>

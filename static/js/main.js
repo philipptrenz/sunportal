@@ -290,13 +290,15 @@ function loadData(day) {
 
 	//console.log("Requesting data for "+currentDay+" ...");
 	$.ajax({ 
-		type: 'post', 
-		url: './update.php', 
-		data : request_data, 
+		type : "POST",
+        url : "/update",
+        data: JSON.stringify(request_data, null, '\t'),
+        contentType: 'application/json',
 		error: function(XMLHttpRequest, textStatus, errorThrown) {
   			//alert("Something went wrong ...");
      		requesting = false;
-     		loadData(); 		// try again, recursively
+     		//loadData(); 		// try again, recursively
+     		alert('Loading data failed.');
 		},
 		success: function(resp) {
 
