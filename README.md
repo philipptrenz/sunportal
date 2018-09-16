@@ -16,7 +16,31 @@ Also add a cronjob for SBFspot to run every 5 minutes. Execute `sudo crontab -e`
 
 After that install _sunportal_:
 
-**No installation instructions for python yet!**
+```bash
+# install needed dependencies
+sudo apt-get install git python3 python3-pip 
+sudo pip install flask sqlite3
+
+# clone this repo
+git clone https://github.com/philipptrenz/sunportal
+cd sunportal
+
+# and start
+sudo python3 sunportal.py
+```
+
+If you want to run sunportal as a service on boot:
+```bash
+# make the scripts executable
+sudo chmod 755 sunportal.py
+sudo chmod 755 sunportal.sh
+
+# add the bash script to the service folder
+sudo cp sunportal.sh /etc/init.d
+sudo update-rc.d sunportal.sh defaults
+
+```
+Now you can start and stop your script via `sudo service 433PyApi start` or `stop` and it automatically starts on boot.
 
 ## Disclaimer
 
