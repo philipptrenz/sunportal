@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """
 """
-import json
+import json, os.path
 
 class Config():
 
@@ -18,7 +18,11 @@ class Config():
         return self.config
 
     def get_database_path(self):
-        return self.config["database"]["path"]
+        path = self.config["database"]["path"]
+        if os.path.isfile(path):
+            return self.config["database"]["path"]
+        else:
+            raise Exception("sqlite database %s does not exist, check the config(.default).json!" % path)
 
     def get_co2_avoidance_factor(self):
         return self.config["co2_avoidance_factor"]
