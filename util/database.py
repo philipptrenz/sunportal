@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """
 """
-import sqlite3, json
+import sqlite3, json, pytz
 from datetime import datetime, date, time, timedelta
 
 class Database():
@@ -23,7 +23,7 @@ class Database():
         query = '''
             SELECT Serial, TimeStamp, EToday, ETotal, Status, OperatingTime
             FROM SpotData 
-            WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM SpotData);
+            WHERE TimeStamp = (SELECT MAX(TimeStamp) FROM SpotData);
             '''
 
         data = dict()
@@ -90,7 +90,7 @@ class Database():
             query = '''
                 SELECT SUM(EToday) as EToday
                 FROM SpotData
-                WHERE TimeStamp == (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN %s AND %s );
+                WHERE TimeStamp = (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN %s AND %s );
                  '''
         else:
             query = '''
@@ -151,30 +151,29 @@ class Database():
         return data
 
     def get_datetime(self, date):
-        return datetime.strptime(date, "%Y-%m-%d")
+        s = date.split('-')
+        return datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00)
 
     def get_epoch(self, date):
-        epoch = datetime(1970, 1, 1)
-        epoch_time = (datetime.strptime(date, "%Y-%m-%d") - epoch).total_seconds()
-        return int(epoch_time)
+        s = date.split('-')
+        return int(datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00).timestamp())
 
     def get_epoch_day(self, date):
-        epoch = datetime(1970, 1, 1)
-        epoch_start = (datetime.strptime(date + " 00:00:00", "%Y-%m-%d %H:%M:%S") - epoch).total_seconds()
-        epoch_end = (datetime.strptime(date + " 23:59:59", "%Y-%m-%d %H:%M:%S") - epoch).total_seconds()
-        return int(epoch_start), int(epoch_end)
+        s = date.split('-')
+        epoch_start =  int(datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00).timestamp())
+        epoch_end =  int(datetime(int(s[0]), int(s[1]), int(s[2]), 23, 59, 59).timestamp())
+        return epoch_start, epoch_end
 
     def get_epoch_month(self, date):
-        epoch = datetime(1970, 1, 1)
-        epoch_start = (datetime.strptime(date[:7] + "-01 00:00:00", "%Y-%m-%d %H:%M:%S") - epoch).total_seconds()
-        month_end = str(self.get_last_day_of_month(date))[:10]
-        epoch_end = (datetime.strptime(month_end + " 23:59:59", "%Y-%m-%d %H:%M:%S") - epoch).total_seconds()
-        return int(epoch_start), int(epoch_end)
+        s = date.split('-')
+        epoch_start = int(datetime(int(s[0]), int(s[1]), 1, 00, 00, 00).timestamp())
+        epoch_end = int(datetime(int(s[0]), int(s[1]), self.get_last_day_of_month(date), 23, 59, 59).timestamp())
+        return epoch_start, epoch_end
 
     def get_last_day_of_month(self, date):
         day = datetime.strptime(date, "%Y-%m-%d")
         next_month = day.replace(day=28) + timedelta(days=4)  # this will never fail
-        return next_month - timedelta(days=next_month.day)
+        return (next_month - timedelta(days=next_month.day)).day
 
     def close(self):
         self.db.close()

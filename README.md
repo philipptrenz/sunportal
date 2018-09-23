@@ -19,7 +19,7 @@ After that install _sunportal_:
 ```bash
 # install needed dependencies
 sudo apt-get install git python3 python3-pip 
-sudo pip install flask
+sudo pip install flask pytz
 
 # clone this repo
 git clone https://github.com/philipptrenz/sunportal
