@@ -22,8 +22,7 @@ class Database():
 
         query = '''
             SELECT Serial, TimeStamp, EToday, ETotal, Status, OperatingTime
-            FROM SpotData 
-            WHERE TimeStamp = (SELECT MAX(TimeStamp) FROM SpotData);
+            FROM Inverters;
             '''
 
         data = dict()
@@ -41,12 +40,14 @@ class Database():
             data['inverters'][serial]['status'] = row[4]
             data['inverters'][serial]['operatingTime'] = row[5]
 
-            inv_co2 = round(row[3] / 1000 * self.co2_mult)
+            inv_co2 = None
+            if row[3] is not None:
+                inv_co2 = round(row[3] / 1000 * self.co2_mult)
             data['inverters'][serial]['co2'] = inv_co2
 
-            total_day += row[2]
-            total += row[3]
-            co2 += inv_co2
+            if row[2] is not None: total_day += row[2]
+            if row[3] is not None: total += row[3]
+            if row[3] is not None: co2 += inv_co2
 
         data['dayTotal'] = total_day
         data['total'] = total
@@ -89,17 +90,16 @@ class Database():
         if self.get_datetime(date).date() == datetime.today().date():
             query = '''
                 SELECT SUM(EToday) as EToday
-                FROM SpotData
-                WHERE TimeStamp = (SELECT MAX(TimeStamp) FROM SpotData WHERE TimeStamp BETWEEN %s AND %s );
-                 '''
+                FROM Inverters;
+                '''
         else:
             query = '''
                 SELECT SUM(DayYield) AS Power 
                 FROM MonthData 
                 WHERE TimeStamp BETWEEN %s AND %s
                 GROUP BY TimeStamp
-                '''
-        self.c.execute(query % (day_start, day_end))
+                ''' % (day_start, day_end)
+        self.c.execute(query)
         data['total'] = self.c.fetchone()[0]
 
         query = '''
