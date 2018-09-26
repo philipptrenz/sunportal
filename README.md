@@ -4,6 +4,8 @@ _sunportal_ is a web based visualisation tool to display data of SMA solar inver
 
 ![sunportal example image](/static/img/sunportal.jpg?raw=true)
 
+Also check out my [s0-bridge](https://github.com/philipptrenz/s0-bridge) project for adding power consumption and production of non-smart inverters to your SBFspot database using external power meters with S0 interface!
+
 ## Installation on a Raspberry Pi
 
 First install and configure SBFspot as described [here](https://github.com/SBFspot/SBFspot/wiki/Installation-Linux-SQLite#sbfspot-with-sqlite), the _SBFspotUploadDaemon_ is not required. 
