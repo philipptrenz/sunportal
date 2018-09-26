@@ -110,8 +110,11 @@ class Database():
         self.c.execute(query)
         first_data, last_data = self.c.fetchone()
 
-        data['hasPrevious'] = (first_data < day_start)
-        data['hasNext'] = (last_data > day_end)
+        if (first_data):  data['hasPrevious'] = (first_data < day_start)
+        else: data['hasPrevious'] = False
+
+        if (last_data): data['hasNext'] = (last_data > day_end)
+        else: data['hasNext'] = False
 
         #print(json.dumps(data, indent=4))
         return data
