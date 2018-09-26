@@ -80,7 +80,7 @@ class Database():
 			FROM DayData 
 			WHERE TimeStamp BETWEEN %s AND %s 
 			GROUP BY TimeStamp;
-            '''
+        '''
 
         data['data'] = list()
         for row in self.c.execute(query % (day_start, day_end)):
