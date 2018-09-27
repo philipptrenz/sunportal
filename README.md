@@ -4,7 +4,7 @@ _sunportal_ is a web based visualisation tool to display data of SMA solar inver
 
 ![sunportal example image](/static/img/sunportal.jpg?raw=true)
 
-Also check out my [s0-bridge](https://github.com/philipptrenz/s0-bridge) project for adding power consumption and production of non-smart inverters to your SBFspot database using external power meters with S0 interface!
+Also check out my [s0-bridge](https://github.com/philipptrenz/s0-bridge) project for adding power consumption and production data of non-smart inverters to a SBFspot database by using external power meters with S0 interface!
 
 If you like my project and want to keep me motivated:
 
