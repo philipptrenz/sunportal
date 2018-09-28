@@ -5,11 +5,13 @@ import flask, json
 from flask import Flask, render_template, request, json, jsonify
 
 from util.config import Config
+from util.mail import Mail
 from util.database import Database
 
 
 config = Config()
 db = Database(config=config)
+mail = Mail(config, db)
 app = Flask(__name__)
 
 
@@ -32,6 +34,8 @@ def update():
 
 if __name__ == '__main__':
 	try:
+		mail.start()
 		app.run(host='0.0.0.0', port=80)
 	except:
 		db.close()
+		mail.join()

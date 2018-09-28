@@ -153,6 +153,24 @@ class Database():
 
         return data
 
+    def get_inverters(self):
+        query = '''
+            SELECT Serial, Name, Type, TimeStamp, EToday, ETotal, Status, OperatingTime
+            FROM Inverters;
+            '''
+        invs = []
+        for row in self.c.execute(query):
+            invs.append( {
+                'serial': row[0],
+                'name': row[1],
+                'type': row[2],
+                'ts': row[3],
+                'etoday': row[4],
+                'etotal': row[5],
+                'status': row[6]
+            } )
+        return invs
+
     def get_datetime(self, date):
         s = date.split('-')
         return datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00)
