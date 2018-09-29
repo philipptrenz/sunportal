@@ -52,7 +52,7 @@ cp config.default.json config.json
 nano config.json
 ```
 
-Under `mail` you can enable the integrated mail notification service by adding an smtp server.
+Under `mail` you can enable the integrated mail notification service by adding an SMTP server.
 
 ```json
 {
