@@ -153,7 +153,11 @@ class Database():
                 WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
                 ''' % (day_start, day_end, inverter_serial)
         self.c.execute(query)
-        data['total'] = self.c.fetchone()[0]
+        res = self.c.fetchone()
+        if res and res[0]:
+            data['total'] = res[0]
+        else:
+            data['total']  = 0
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
