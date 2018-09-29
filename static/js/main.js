@@ -303,16 +303,6 @@ function loadData(day) {
 	                moment.unix(all.day.interval.to)
 	            ];
 
-                /*
-	            all.day.data.forEach(function(obj) {
-	                obj.x = moment.unix(obj.time);
-	                obj.y = obj.power / 1000;
-	                delete obj.time;
-	                delete obj.power;
-	            })
-	            dayChart.data.datasets[0].data = all.day.data;
-                */
-
                 // update month chart
 	            $("#chart-month-col .chart-date").text(getMonthStringForPrint());
 	            $("#chart-month-col .inverter-yield").text( addPrefix(all.month.total) + "Wh");
@@ -331,15 +321,6 @@ function loadData(day) {
 	                moment.unix(all.month.interval.to)
 	            ];
 
-	            /*
-	            all.month.data.forEach(function(obj) {
-	                obj.x = moment.unix(obj.time).subtract(1, 'days');
-	                obj.y = obj.power / 1000;
-	                delete obj.time;
-	                delete obj.power;
-	            })
-	            monthChart.data.datasets[0].data = all.month.data;
-                */
 	        }
 
 	        var chart_num = 0;
@@ -349,6 +330,7 @@ function loadData(day) {
                     var inv_data = response.requested.inverters[k]
 
                     {
+
 
                         // WORKAROUND FOR CHART.JS BUG
                         if (all.day.data[0].time < inv_data.day.data[0].time) {
@@ -369,9 +351,6 @@ function loadData(day) {
                             inv_data.day.data.concat(tmp);
                         }
                         // WORKAROUND FOR CHART.JS BUG END
-
-
-
 
 
                         // update day chart
@@ -395,7 +374,6 @@ function loadData(day) {
                             dayChart.data.datasets[chart_num].data = inv_data.day.data;
                         }
 
-
                     	// update month chart
                         inv_data.month.data.forEach(function(obj) {
                             obj.x = moment.unix(obj.time).subtract(1, 'days');
@@ -403,8 +381,6 @@ function loadData(day) {
                             delete obj.time;
                             delete obj.power;
                         })
-
-
 
                         var is_label_not_defined = (monthChart.data.datasets[chart_num] && (monthChart.data.datasets[chart_num].label != response.today.inverters[k].name))
                         if ( is_label_not_defined || !monthChart.data.datasets[chart_num]) {
