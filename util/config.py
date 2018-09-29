@@ -36,6 +36,9 @@ class Config():
     def get_co2_avoidance_factor(self):
         return self.config["co2_avoidance_factor"]
 
+    def get_renamings(self):
+        return self.config["renaming"]
+
     def log(self, msg, error=''):
         ts = datetime.now()
         if error: print(' *', msg, '['+str(error)+']')

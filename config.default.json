@@ -19,5 +19,8 @@
 			"user": "",
 			"password": ""
 		}
-	}
+	},
+    "renaming": {
+        "10000000001": "My Inverter 1"
+    }
 }
