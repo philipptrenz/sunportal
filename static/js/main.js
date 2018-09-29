@@ -113,14 +113,7 @@ function initializeCharts(serial) {
 	    type: 'line',
 	    data: {
 	        labels: [],
-	        datasets: [{
-	            label: 'Wh',
-	            data: [],
-	            backgroundColor: 'rgba(227,6,19,0.3)',
-	            borderColor: 'rgba(227,6,19,1)',
-	            borderWidth: 1,
-	            pointRadius: 0
-	        }]
+	        datasets: [{}]
 	    },
 	    options: {
 	    	responsive: true,
@@ -138,7 +131,8 @@ function initializeCharts(serial) {
 	                },
 					gridLines: {
 						color: 'rgba(255,255,255,0.1)'
-					}
+					},
+					stacked: true
 	            }],
 	            xAxes: [{
 	            	display: true,
@@ -154,7 +148,8 @@ function initializeCharts(serial) {
 	                },
 					gridLines: {
 						color: 'rgba(255,255,255,0.1)'
-					}
+					},
+					stacked: false
 	            }]
 	        },
 	        legend: {
@@ -181,14 +176,7 @@ function initializeCharts(serial) {
 	    type: 'bar',
 	    data: {
 	        labels: [],
-	        datasets: [{
-	            label: 'Wh',
-	            data: [],
-	            backgroundColor: 'rgba(227,6,19,0.3)',
-	            borderColor: 'rgba(227,6,19,1)',
-	            borderWidth: 1,
-	            pointRadius: 0
-	        }]
+	        datasets: [ {} ]
 	    },
 	    options: {
 	    	responsive: true,
@@ -206,7 +194,8 @@ function initializeCharts(serial) {
 	                },
 					gridLines: {
 						color: 'rgba(255,255,255,0.1)'
-					}
+					},
+				    stacked: true
 	            }],
 	            xAxes: [{
 	            	display: true,
@@ -219,7 +208,8 @@ function initializeCharts(serial) {
 	                },
 					gridLines: {
 						color: 'rgba(255,255,255,0.1)'
-					}
+					},
+					stacked: true
 	            }]
 	        },
 	        legend: {
@@ -292,10 +282,10 @@ function loadData(day) {
 	        var monthChart = charts.month;
 	        var currentDayDate =  moment(currentDay).format('YYYY-MM-DD');
 
-	        all = response['requested']['all'];
+	        var all = response.requested.all;
 
-	        {	// update day chart
-
+	        {
+	            // update day chart
 	            $("#chart-day-col .chart-date").text(getDayStringForPrint());
 	            $("#chart-day-col .inverter-yield").text( addPrefix(all.day.total) + "Wh");
 
@@ -307,31 +297,23 @@ function loadData(day) {
 	                $(this).css("visibility", (all.day.hasPrevious ? "visible" : "hidden"));
 	            });
 
-	            var datapoints = all.day.data;
-
 	            // update scale
 	            dayChart.data.labels = [
 	                moment.unix(all.day.interval.from),
 	                moment.unix(all.day.interval.to)
 	            ];
 
-	            datapoints.forEach(function(obj) {
+                /*
+	            all.day.data.forEach(function(obj) {
 	                obj.x = moment.unix(obj.time);
-	                obj.y = obj.power;
+	                obj.y = obj.power / 1000;
 	                delete obj.time;
 	                delete obj.power;
 	            })
+	            dayChart.data.datasets[0].data = all.day.data;
+                */
 
-	            dayChart.data.datasets.forEach((dataset) => {
-	                dataset.data = datapoints;
-	            });
-
-	            dayChart.update();
-
-	        }
-
-	        {	// update month chart
-
+                // update month chart
 	            $("#chart-month-col .chart-date").text(getMonthStringForPrint());
 	            $("#chart-month-col .inverter-yield").text( addPrefix(all.month.total) + "Wh");
 
@@ -343,29 +325,110 @@ function loadData(day) {
 	                $(this).css("visibility", (all.month.hasPrevious ? "visible" : "hidden"));
 	            });
 
-	            var datapoints = all.month.data;
-
-
 	            // update scale
 	            monthChart.data.labels = [
 	                moment.unix(all.month.interval.from),
 	                moment.unix(all.month.interval.to)
 	            ];
 
-	            datapoints.forEach(function(obj) {
+	            /*
+	            all.month.data.forEach(function(obj) {
 	                obj.x = moment.unix(obj.time).subtract(1, 'days');
-	                obj.y = obj.power;
+	                obj.y = obj.power / 1000;
 	                delete obj.time;
 	                delete obj.power;
 	            })
-
-	            monthChart.data.datasets.forEach((dataset) => {
-	                dataset.data = datapoints;
-	            });
-
-	            monthChart.update();
-
+	            monthChart.data.datasets[0].data = all.month.data;
+                */
 	        }
+
+	        var chart_num = 0;
+	        for (var k in response.requested.inverters) {
+                if (response.requested.inverters.hasOwnProperty(k)) {
+                    var serial = k
+                    var inv_data = response.requested.inverters[k]
+
+                    {
+
+                        // WORKAROUND FOR CHART.JS BUG
+                        if (all.day.data[0].time < inv_data.day.data[0].time) {
+                            var tmp = [], i = 0;
+                            while (all.day.data[i].time < inv_data.day.data[0].time) {
+                                tmp.push( { 'time': all.day.data[i].time, 'power': 0 } );
+                                i++;
+                            }
+                            var tmp2 = tmp.concat(inv_data.day.data);
+                            inv_data.day.data = tmp2;
+                        }
+                        if (all.day.data[all.day.data.length-1].time > inv_data.day.data[inv_data.day.data.length-1].time) {
+                            var tmp, i = all.day.data.length-1;
+                            while (all.day.data[i].time < inv_data.day.data[inv_data.day.data.length-1].time) {
+                                tmp.unshift( { 'time': all.day.data[i].time, 'power': 0 } );
+                                i--;
+                            }
+                            inv_data.day.data.concat(tmp);
+                        }
+                        // WORKAROUND FOR CHART.JS BUG END
+
+
+
+
+
+                        // update day chart
+                        inv_data.day.data.forEach(function(obj) {
+                            obj.x = moment.unix(obj.time);
+                            obj.y = obj.power / 1000;
+                            delete obj.time;
+                            delete obj.power;
+                        })
+                        var is_label_not_defined = (dayChart.data.datasets[chart_num] && (dayChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+                        if (is_label_not_defined || !dayChart.data.datasets[chart_num]) {
+                            dayChart.data.datasets[chart_num] = {
+                                label: response.today.inverters[k].name,
+                                data: inv_data.day.data,
+                                backgroundColor: 'rgba(227,6,19,0.3)',
+                                borderColor: 'rgba(227,6,19,1)',
+                                borderWidth: 1,
+                                pointRadius: 0
+                            }
+                        } else {
+                            dayChart.data.datasets[chart_num].data = inv_data.day.data;
+                        }
+
+
+                    	// update month chart
+                        inv_data.month.data.forEach(function(obj) {
+                            obj.x = moment.unix(obj.time).subtract(1, 'days');
+                            obj.y = obj.power / 1000;
+                            delete obj.time;
+                            delete obj.power;
+                        })
+
+
+
+                        var is_label_not_defined = (monthChart.data.datasets[chart_num] && (monthChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+                        if ( is_label_not_defined || !monthChart.data.datasets[chart_num]) {
+                            monthChart.data.datasets[chart_num] = {
+                                label: response.today.inverters[k].name,
+                                data: inv_data.month.data,
+                                backgroundColor: 'rgba(227,6,19,0.3)',
+                                borderColor: 'rgba(227,6,19,1)',
+                                borderWidth: 1,
+                                pointRadius: 0
+                            }
+                        } else {
+                            monthChart.data.datasets[chart_num].data = inv_data.month.data;
+                        }
+                    }
+                    chart_num++;
+                }
+            }
+
+            dayChart.data.datasets.sort(sort_inverter_datasets_alphabetically);   // sort alphabetically
+            dayChart.update();
+
+            monthChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
+            monthChart.update();
 
 			requesting = false;
 			reloadTimer = setTimeout(loadData, reloadTime);
@@ -373,6 +436,11 @@ function loadData(day) {
 	});
 }
 
+function sort_inverter_datasets_alphabetically(a, b) {
+    var textA = a.label.toUpperCase();
+    var textB = b.label.toUpperCase();
+    return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+}
 
 function navigate(self) {
 	var id = $(self).parent().parent().attr('id');
