@@ -148,8 +148,10 @@ class Database():
         self.c.execute(query)
         first_data, last_data = self.c.fetchone()
 
-        data['hasPrevious'] = (first_data < month_start)
-        data['hasNext'] = (last_data > month_end)
+        if first_data: data['hasPrevious'] = (first_data < month_start)
+        else: data['hasPrevious'] = False
+        if last_data: data['hasNext'] = (last_data > month_end)
+        else: data['hasNext'] = False
 
         return data
 
