@@ -15,7 +15,7 @@ Planned features:
 * Grouped inverter visualisation
 * Visualization of yearly power production
 * Visualization of power consumption
-* Validation of `config.json` per [JSON Schema](https://json-schema.org/)
+* Validation of `config.json` with [JSON Schema](https://json-schema.org/)
 * Configuration of _sunportal_ via web interface
 * REST-API, i.e. to integrate solar power plants into home automation applications
 
