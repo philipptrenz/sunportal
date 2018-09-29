@@ -10,6 +10,7 @@ Current features:
 Planned features:
 
 * Grouped inverter visualisation
+* Visualization of yearly power production
 * REST-API, i.e. to integrate power plants into home automation applications
 
 If you like my project and want to keep me motivated:
