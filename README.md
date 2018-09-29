@@ -48,10 +48,10 @@ Under `mail` you can enable the integrated mail notification service by adding a
 	"database": {
 		"path": "/home/pi/smadata/SBFspot.db"
 	},
-	"co2_avoidance_factor": 0.7,        // in kg/kWh
+	"co2_avoidance_factor": 0.7,       
 	"mail": {
 		"enabled": "false",
-		"check_interval": 300,          // in seconds
+		"check_interval": 300,         
 		"sender": "sunportal@example.com",
 		"smtp_server": {
 			"url": "smtp.example.com",
