@@ -73,12 +73,15 @@ class Mail:
             msg['From'] = sender
             msg['To'] = ", ".join(recipients)
 
-            if not in_reply_to:
-                msg['Message-ID'] = message_id
-                msg['Subject'] = "sunportal: %s" % subject
+            if message_id is not None:
+                if not in_reply_to:
+                    msg['Message-ID'] = message_id
+                    msg['Subject'] = "sunportal: %s" % subject
+                else:
+                    msg['In-Reply-To'] = message_id
+                    msg['Subject'] = "RE: sunportal: %s" % subject
             else:
-                msg['In-Reply-To'] = message_id
-                msg['Subject'] = "RE: sunportal: %s" % subject
+                msg['Subject'] = "sunportal: %s" % subject
 
             msg.attach(MIMEText(message))
 
@@ -142,5 +145,4 @@ if __name__ == '__main__':
     db = Database(cfg)
 
     mail = Mail(cfg, db)
-    mail.start()
-    #mail.run()
+    mail.send_mail('test mail', 'this is your test mail', debug=True)

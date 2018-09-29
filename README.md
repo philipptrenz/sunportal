@@ -30,15 +30,55 @@ sudo pip install flask pytz
 # clone this repo
 git clone https://github.com/philipptrenz/sunportal
 cd sunportal
+```
 
-# and start
+## Configure _sunportal_
+
+All configuration parameters of _sunportal_ get stored inside the `config.json` json file. To edit the preconfigured values copy the `config.default.json` and edit the `config.json`:
+
+```bash
+cp config.default.json config.json
+nano config.json
+```
+
+Under `mail` you can enable the integrated mail notification service by adding an smtp server.
+
+```json
+{
+	"database": {
+		"path": "/home/pi/smadata/SBFspot.db"
+	},
+	"co2_avoidance_factor": 0.7,        // in kg/kWh
+	"mail": {
+		"enabled": "false",
+		"check_interval": 300,          // in seconds
+		"sender": "sunportal@example.com",
+		"smtp_server": {
+			"url": "smtp.example.com",
+			"port": 587
+		},
+		"recipients": [
+			"me@example.com"
+		],
+		"starttls": {
+			"enabled": "false",
+			"user": "",
+			"password": ""
+		}
+	}
+}
+```
+
+## Start _sunportal_
+
+```bash
 sudo python3 sunportal.py
 ```
 
 Open a browser and navigate to the IP address of the Raspberry Pi to see the website.
 
+### Run _sunportal_ on boot
 
-To run _sunportal_ on boot:
 ```bash
 # make the scripts executable
 sudo chmod 755 sunportal.*
@@ -48,6 +88,7 @@ sudo cp sunportal.sh /etc/init.d/sunportal
 sudo update-rc.d sunportal defaults
 
 ```
+
 Now _sunportal_ can be controlled as a service (`sudo service sunportal status`) and it automatically starts on boot.
 
 ## Disclaimer
