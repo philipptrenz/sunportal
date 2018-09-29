@@ -64,7 +64,14 @@ class Database():
         data['all']['day'] = self.get_requested_day(date)
         data['all']['month'] = self.get_requested_month(date)
 
-        data['inverters'] = list()
+        data['inverters'] = dict()
+
+        inverters = self.get_inverters()
+        for inv in inverters:
+            data['inverters'][inv['serial']] = { 'day': [], 'month': [] }
+
+            data['inverters'][inv['serial']]['day'] = self.get_requested_day_for_inverter(inv['serial'], date)
+            data['inverters'][inv['serial']]['month'] = self.get_requested_month_for_inverter(inv['serial'], date)
 
         return data
 
@@ -119,6 +126,54 @@ class Database():
         #print(json.dumps(data, indent=4))
         return data
 
+    def get_requested_day_for_inverter(self, inverter_serial, date):
+        data = dict()
+
+        day_start, day_end = self.get_epoch_day(date)
+        data['interval'] = {'from': day_start, 'to': day_end}
+
+        query = '''
+            SELECT TimeStamp, Power 
+            FROM DayData 
+            WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s;
+            '''
+
+        data['data'] = list()
+        for row in self.c.execute(query % (day_start, day_end, inverter_serial)):
+            data['data'].append({'time': row[0], 'power': row[1]})
+
+        if self.get_datetime(date).date() == datetime.today().date():
+            query = '''
+                        SELECT EToday
+                        FROM Inverters
+                        WHERE Serial = %s;
+                        ''' % inverter_serial
+        else:
+            query = '''
+                        SELECT DayYield AS Power 
+                        FROM MonthData 
+                        WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
+                        ''' % (day_start, day_end, inverter_serial)
+        self.c.execute(query)
+        data['total'] = self.c.fetchone()[0]
+
+        query = '''
+                    SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+        			FROM ( SELECT TimeStamp FROM DayData WHERE Serial = %s );
+                    ''' % inverter_serial
+
+        self.c.execute(query)
+        first_data, last_data = self.c.fetchone()
+
+        if (first_data): data['hasPrevious'] = (first_data < day_start)
+        else: data['hasPrevious'] = False
+
+        if (last_data): data['hasNext'] = (last_data > day_end)
+        else: data['hasNext'] = False
+
+        # print(json.dumps(data, indent=4))
+        return data
+
     def get_requested_month(self, date):
         data = dict()
 
@@ -144,6 +199,42 @@ class Database():
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
             FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );
             '''
+
+        self.c.execute(query)
+        first_data, last_data = self.c.fetchone()
+
+        if first_data: data['hasPrevious'] = (first_data < month_start)
+        else: data['hasPrevious'] = False
+        if last_data: data['hasNext'] = (last_data > month_end)
+        else: data['hasNext'] = False
+
+        return data
+
+    def get_requested_month_for_inverter(self, inverter_serial, date):
+        data = dict()
+
+        month_start, month_end = self.get_epoch_month(date)
+        data['interval'] = {'from': month_start, 'to': month_end}
+        month_total = 0
+
+        query = '''
+                    SELECT TimeStamp, DayYield AS Power 
+                    FROM MonthData 
+                    WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
+                    '''
+
+        data['data'] = list()
+        for row in self.c.execute(query % (month_start, month_end, inverter_serial)):
+            data['data'].append({'time': row[0], 'power': row[1]})
+            month_total += row[1]
+
+        data['total'] = month_total
+
+        query = '''
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+            FROM MonthData 
+            WHERE Serial = %s;
+            ''' % inverter_serial
 
         self.c.execute(query)
         first_data, last_data = self.c.fetchone()
