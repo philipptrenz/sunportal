@@ -38,5 +38,5 @@ class Config():
 
     def log(self, msg, error=''):
         ts = datetime.now()
-        if error: print(ts, '|', msg, '['+str(error)+']')
-        else: print(ts, '|', msg)
+        if error: print(' *', msg, '['+str(error)+']')
+        else: print(' *', msg)
