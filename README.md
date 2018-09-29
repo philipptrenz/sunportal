@@ -1,6 +1,6 @@
 # sunportal
 
-_sunportal_ is a web based visualisation tool to display data of SMA solar inverters. It is based on the database of [SBFspot](https://github.com/SBFspot/SBFspot) and shows charts of this and previous days on a website. It runs on a Raspberry Pi and can handle multiple inverters in one Speedwire or Bluetooth(R) network.
+_sunportal_ is a web based visualisation tool to display data of SMA solar inverters. It is based on the database of [SBFspot](https://github.com/SBFspot/SBFspot) and shows charts daily and monthly power production. It runs on a Raspberry Pi and can handle multiple inverters in one Speedwire or Bluetooth(R) network.
 
 Inverters that do not support Speedwire or Bluetooth or that are not from the manufacturer SMA can be integrated through [s0-bridge](https://github.com/philipptrenz/s0-bridge). _s0-bridge_ also enables power consumption to be recorded by using electric meters with S0 interface.
 
