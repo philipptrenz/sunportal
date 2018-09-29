@@ -2,6 +2,16 @@
 
 _sunportal_ is a web based visualisation tool to display data of SMA solar inverters. It is based on the database of [SBFspot](https://github.com/SBFspot/SBFspot) and shows charts of this and previous days on a website. It runs on a Raspberry Pi and can handle multiple inverters in one Speedwire or Bluetooth(R) network.
 
+Current features:
+
+* Web based visualization of daily and monthly power production
+* Mail notification service for inverter disorders and lack of production
+
+Planned features:
+
+* Grouped inverter visualisation
+* REST-API, i.e. to integrate power plants into home automation applications
+
 If you like my project and want to keep me motivated:
 
 <a href='https://ko-fi.com/U7U6COXD' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi2.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
