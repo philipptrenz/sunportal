@@ -20,34 +20,32 @@ class Database():
 
     def get_today(self):
 
-        query = '''
-            SELECT Serial, TimeStamp, EToday, ETotal, Status, OperatingTime
-            FROM Inverters;
-            '''
-
         data = dict()
-        total_day=0
-        total=0
-        co2=0
+        total_day = 0
+        total = 0
+        co2 = 0
 
         data['inverters'] = dict()
-        for row in self.c.execute(query):
-            serial = str(row[0])
-            data['inverters'][serial] = dict()
-            data['inverters'][serial]['lastUpdated'] = row[1]
-            data['inverters'][serial]['dayTotal'] = row[2]
-            data['inverters'][serial]['total'] = row[3]
-            data['inverters'][serial]['status'] = row[4]
-            data['inverters'][serial]['operatingTime'] = row[5]
+        inverters = self.get_inverters()
+        for inv in inverters:
 
-            inv_co2 = None
-            if row[3] is not None:
-                inv_co2 = round(row[3] / 1000 * self.co2_mult)
-            data['inverters'][serial]['co2'] = inv_co2
+            inv_co2 = 0
+            if inv['etotal'] is not None:
+                inv_co2 = round(inv['etotal'] / 1000 * self.co2_mult)
 
-            if row[2] is not None: total_day += row[2]
-            if row[3] is not None: total += row[3]
-            if row[3] is not None: co2 += inv_co2
+            data['inverters'][inv['serial']] = {
+                'serial': inv['serial'],
+                'name': inv['name'],
+                'lastUpdated': inv['ts'],
+                'dayTotal': inv['etoday'],
+                'total': inv['etotal'],
+                'status': inv['status'],
+                'co2': inv_co2
+            }
+
+            if inv['etoday'] is not None: total_day += inv['etoday']
+            if inv['etotal'] is not None: total += inv['etotal']
+            co2 += inv_co2
 
         data['dayTotal'] = total_day
         data['total'] = total
@@ -144,23 +142,23 @@ class Database():
 
         if self.get_datetime(date).date() == datetime.today().date():
             query = '''
-                        SELECT EToday
-                        FROM Inverters
-                        WHERE Serial = %s;
-                        ''' % inverter_serial
+                SELECT EToday
+                FROM Inverters
+                WHERE Serial = %s;
+                ''' % inverter_serial
         else:
             query = '''
-                        SELECT DayYield AS Power 
-                        FROM MonthData 
-                        WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
-                        ''' % (day_start, day_end, inverter_serial)
+                SELECT DayYield AS Power 
+                FROM MonthData 
+                WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
+                ''' % (day_start, day_end, inverter_serial)
         self.c.execute(query)
         data['total'] = self.c.fetchone()[0]
 
         query = '''
-                    SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
-        			FROM ( SELECT TimeStamp FROM DayData WHERE Serial = %s );
-                    ''' % inverter_serial
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+            FROM ( SELECT TimeStamp FROM DayData WHERE Serial = %s );
+            ''' % inverter_serial
 
         self.c.execute(query)
         first_data, last_data = self.c.fetchone()
@@ -218,10 +216,10 @@ class Database():
         month_total = 0
 
         query = '''
-                    SELECT TimeStamp, DayYield AS Power 
-                    FROM MonthData 
-                    WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
-                    '''
+            SELECT TimeStamp, DayYield AS Power 
+            FROM MonthData 
+            WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
+            '''
 
         data['data'] = list()
         for row in self.c.execute(query % (month_start, month_end, inverter_serial)):
@@ -252,10 +250,16 @@ class Database():
             FROM Inverters;
             '''
         invs = []
+        renamings = self.config.get_renamings()
         for row in self.c.execute(query):
+            serial = str(row[0])
+            name = row[1]
+            if serial in renamings.keys():
+                name = renamings[serial]
+
             invs.append( {
-                'serial': row[0],
-                'name': row[1],
+                'serial': serial,
+                'name': name,
                 'type': row[2],
                 'ts': row[3],
                 'etoday': row[4],
