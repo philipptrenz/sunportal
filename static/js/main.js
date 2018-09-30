@@ -329,9 +329,9 @@ function loadData(day) {
                     var serial = k
                     var inv_data = response.requested.inverters[k]
 
-                    {
-                        // WORKAROUND FOR CHART.JS STACKED CHARTS BUG
-                        // ISSUE: https://github.com/chartjs/Chart.js/issues/5484
+                    // WORKAROUND FOR CHART.JS STACKED CHARTS BUG
+                    // ISSUE: https://github.com/chartjs/Chart.js/issues/5484
+                    if (all.day.data.length > 0) {
 
                         // for day data with missing timestamps at the beginning
                         if (all.day.data[0].time < inv_data.day.data[0].time) {
@@ -365,8 +365,8 @@ function loadData(day) {
                             var tmp2 = tmp.concat(inv_data.month.data);
                             inv_data.month.data = tmp2;
                         }
-                        // WORKAROUND FOR CHART.JS BUG END
                     }
+                    // WORKAROUND FOR CHART.JS BUG END
 
 
                     // update day chart
