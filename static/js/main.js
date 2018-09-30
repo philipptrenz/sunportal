@@ -331,7 +331,7 @@ function loadData(day) {
 
                     // WORKAROUND FOR CHART.JS STACKED CHARTS BUG
                     // ISSUE: https://github.com/chartjs/Chart.js/issues/5484
-                    if (all.day.data.length > 0) {
+                    if (inv_data.day.data.length > 0) {
 
                         // for day data with missing timestamps at the beginning
                         if (all.day.data[0].time < inv_data.day.data[0].time) {
