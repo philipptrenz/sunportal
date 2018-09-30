@@ -86,7 +86,7 @@ div.chart-container > .chart-container-inner {
 }
 
 div.chart-container canvas {
-	height: 30vh !important;
+	height: 40vh !important;
 }
 
 div.status {
