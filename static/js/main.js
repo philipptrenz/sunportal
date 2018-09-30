@@ -519,7 +519,7 @@ function getMonthStringForPrint() {
 
 function getColorShades(num, color) {
     var shades = Array();
-    var min = 0.5, max = -0.5
+    var min = 0.8, max = -0.8
     for (var i=1; i<= num; i++) {
         var percentage = min+i*(max-min)/(num+1);
         shades.push(shadeBlendConvert(percentage, color));
