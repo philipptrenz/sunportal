@@ -330,25 +330,35 @@ function loadData(day) {
                     var inv_data = response.requested.inverters[k]
 
                     {
-
                         // WORKAROUND FOR CHART.JS STACKED CHARTS BUG
                         // ISSUE: https://github.com/chartjs/Chart.js/issues/5484
 
-                        // for day data
+                        // for day data with missing timestamps at the beginning
                         if (all.day.data[0].time < inv_data.day.data[0].time) {
                             var tmp = [], i = 0;
-                            while (all.day.data[i].time < inv_data.day.data[0].time) {
+                            var first_ts =  inv_data.day.data[0].time;
+                            while (all.day.data[i].time < first_ts) {
                                 tmp.push( { 'time': all.day.data[i].time, 'power': 0 } );
                                 i++;
                             }
                             var tmp2 = tmp.concat(inv_data.day.data);
                             inv_data.day.data = tmp2;
                         }
+                        // for day data with missing timestamps within the data
+                        if (all.day.data.length != inv_data.day.data.length){ // still timestamps missing
+                            for (var i in all.day.data) {
+                                if (i < inv_data.day.data.length && all.day.data[i].time != inv_data.day.data[i].time ) {
+                                    var tmp2 = Array().concat(inv_data.day.data.slice(0,i), [{ 'time': all.day.data[i].time, 'power': 0 }], inv_data.day.data.slice(i))
+                                    inv_data.day.data = tmp2;
+                                }
+                            }
+                        }
 
-                        // for month data
+                        // for month data with missing timestamps at the beginning
                         if (all.month.data[0].time < inv_data.month.data[0].time) {
                             var tmp = [], i = 0;
-                            while (all.month.data[i].time < inv_data.month.data[0].time) {
+                            var first_ts = inv_data.month.data[0].time;
+                            while (all.month.data[i].time < first_ts) {
                                 tmp.push( { 'time': all.month.data[i].time, 'power': 0 } );
                                 i++;
                             }
@@ -356,51 +366,51 @@ function loadData(day) {
                             inv_data.month.data = tmp2;
                         }
                         // WORKAROUND FOR CHART.JS BUG END
-
-
-                        // update day chart
-                        inv_data.day.data.forEach(function(obj) {
-                            obj.x = moment.unix(obj.time);
-                            obj.y = obj.power / 1000;
-                            delete obj.time;
-                            delete obj.power;
-                        })
-                        var is_label_not_defined = (dayChart.data.datasets[chart_num] && (dayChart.data.datasets[chart_num].label != response.today.inverters[k].name))
-                        if (is_label_not_defined || !dayChart.data.datasets[chart_num]) {
-                            dayChart.data.datasets[chart_num] = {
-                                label: response.today.inverters[k].name,
-                                data: inv_data.day.data,
-                                borderWidth: 1,
-                                pointRadius: 0
-                            }
-                        } else {
-                            dayChart.data.datasets[chart_num].data = inv_data.day.data;
-                        }
-
-
-                    	// update month chart
-                        inv_data.month.data.forEach(function(obj) {
-                            obj.x = moment.unix(obj.time).subtract(1, 'days');
-                            obj.y = obj.power / 1000;
-                            delete obj.time;
-                            delete obj.power;
-                        })
-
-
-
-                        var is_label_not_defined = (monthChart.data.datasets[chart_num] && (monthChart.data.datasets[chart_num].label != response.today.inverters[k].name))
-                        if ( is_label_not_defined || !monthChart.data.datasets[chart_num]) {
-                            monthChart.data.datasets[chart_num] = {
-                                label: response.today.inverters[k].name,
-                                data: inv_data.month.data,
-                                borderWidth: 1,
-                                pointRadius: 0
-                            }
-                        } else {
-                            monthChart.data.datasets[chart_num].data = inv_data.month.data;
-                        }
-                        console.log()
                     }
+
+
+                    // update day chart
+                    inv_data.day.data.forEach(function(obj) {
+                        obj.x = moment.unix(obj.time);
+                        obj.y = obj.power / 1000;
+                        delete obj.time;
+                        delete obj.power;
+                    })
+                    var is_label_not_defined = (dayChart.data.datasets[chart_num] && (dayChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+                    if (is_label_not_defined || !dayChart.data.datasets[chart_num]) {
+                        dayChart.data.datasets[chart_num] = {
+                            label: response.today.inverters[k].name,
+                            data: inv_data.day.data,
+                            borderWidth: 1,
+                            pointRadius: 0
+                        }
+                    } else {
+                        dayChart.data.datasets[chart_num].data = inv_data.day.data;
+                    }
+
+
+                    // update month chart
+                    inv_data.month.data.forEach(function(obj) {
+                        obj.x = moment.unix(obj.time).subtract(1, 'days');
+                        obj.y = obj.power / 1000;
+                        delete obj.time;
+                        delete obj.power;
+                    })
+
+
+
+                    var is_label_not_defined = (monthChart.data.datasets[chart_num] && (monthChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+                    if ( is_label_not_defined || !monthChart.data.datasets[chart_num]) {
+                        monthChart.data.datasets[chart_num] = {
+                            label: response.today.inverters[k].name,
+                            data: inv_data.month.data,
+                            borderWidth: 1,
+                            pointRadius: 0
+                        }
+                    } else {
+                        monthChart.data.datasets[chart_num].data = inv_data.month.data;
+                    }
+
                     chart_num++;
                 }
             }
