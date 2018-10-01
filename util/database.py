@@ -80,7 +80,7 @@ class Database():
         data = dict()
 
         day_start, day_end = self.get_epoch_day(date)
-        data['interval'] = {'from': day_start, 'to': day_end}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(day_start), 'to': self.convert_local_ts_to_utc(day_end)}
 
         query = '''
             SELECT TimeStamp, SUM(Power) AS Power 
@@ -91,7 +91,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (day_start, day_end)):
-            data['data'].append({ 'time': row[0], 'power': row[1] })
+            data['data'].append({ 'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1] })
 
 
         if self.get_datetime(date).date() == datetime.today().date():
@@ -133,7 +133,7 @@ class Database():
         data = dict()
 
         day_start, day_end = self.get_epoch_day(date)
-        data['interval'] = {'from': day_start, 'to': day_end}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(day_start), 'to': self.convert_local_ts_to_utc(day_end)}
 
         query = '''
             SELECT TimeStamp, Power 
@@ -143,7 +143,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (day_start, day_end, inverter_serial)):
-            data['data'].append({'time': row[0], 'power': row[1]})
+            data['data'].append({'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1]})
 
         if self.get_datetime(date).date() == datetime.today().date():
             query = '''
