@@ -278,7 +278,7 @@ class Database():
         return invs
 
     def convert_local_ts_to_utc(self, ts):
-        return int(datetime.utcfromtimestamp(ts).astimezone(self.local_timezone).timestamp())
+        return int(datetime.utcfromtimestamp(ts).replace(tzinfo=self.local_timezone).timestamp())
 
     def get_datetime(self, date):
         s = date.split('-')
@@ -314,5 +314,7 @@ if __name__ == '__main__':
 
     #data =  db.get(date)
     #print(json.dumps(data , indent=4))
-    print(1535842800)
-    print(db.convert_ts_to_utc(1535842800))
+    ts = 1535842800
+    print(ts, datetime.fromtimestamp(ts))
+    ts_new = db.convert_local_ts_to_utc(ts)
+    print(ts_new, datetime.fromtimestamp(ts_new))
