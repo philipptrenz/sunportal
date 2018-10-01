@@ -12,7 +12,7 @@ class Database():
         self.db = sqlite3.connect(self.config.get_database_path(), check_same_thread=False)
         self.c = self.db.cursor()
 
-        self.local_timezone = datetime.now().astimezone().tzinfo
+        self.local_timezone = datetime.now(tz=pytz.utc).astimezone().tzinfo
 
     def get(self, date):
         data = dict()
