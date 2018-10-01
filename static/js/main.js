@@ -354,6 +354,8 @@ function loadData(day) {
                             }
                         }
 
+                    }
+                      if (inv_data.month.data.length > 0) {
                         // for month data with missing timestamps at the beginning
                         if (all.month.data[0].time < inv_data.month.data[0].time) {
                             var tmp = [], i = 0;
