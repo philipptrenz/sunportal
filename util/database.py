@@ -91,7 +91,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (day_start, day_end)):
-            data['data'].append({ 'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1] })
+            data['data'].append({ 'time': row[0], 'power': row[1] })
 
 
         if self.get_datetime(date).date() == datetime.today().date():
@@ -143,7 +143,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (day_start, day_end, inverter_serial)):
-            data['data'].append({'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1]})
+            data['data'].append({'time': row[0], 'power': row[1]})
 
         if self.get_datetime(date).date() == datetime.today().date():
             query = '''
