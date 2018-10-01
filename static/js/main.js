@@ -298,9 +298,11 @@ function loadData(day) {
 	            });
 
 	            // update scale
+	            all.day.interval.from = moment.unix(all.day.interval.from);
+	            all.day.interval.to= moment.unix(all.day.interval.to);
 	            dayChart.data.labels = [
-	                moment.unix(all.day.interval.from),
-	                moment.unix(all.day.interval.to)
+	                all.day.interval.from,
+	                all.day.interval.to
 	            ];
 
                 // update month chart
@@ -316,9 +318,11 @@ function loadData(day) {
 	            });
 
 	            // update scale
+	            all.month.interval.from = moment.unix(all.month.interval.from);
+	            all.month.interval.to = moment.unix(all.month.interval.to);
 	            monthChart.data.labels = [
-	                moment.unix(all.month.interval.from),
-	                moment.unix(all.month.interval.to)
+	                all.month.interval.from,
+	                all.month.interval.to
 	            ];
 
 	        }
@@ -393,7 +397,7 @@ function loadData(day) {
 
                     // update month chart
                     inv_data.month.data.forEach(function(obj) {
-                        obj.x = moment.unix(obj.time).subtract(1, 'days');
+                        obj.x = moment.unix(obj.time).startOf('day').add(12, 'h');
                         obj.y = obj.power / 1000;
                         delete obj.time;
                         delete obj.power;

@@ -2,7 +2,7 @@
 """
 """
 import sqlite3, json, pytz
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, timedelta, timezone
 
 class Database():
 
@@ -11,6 +11,8 @@ class Database():
         self.co2_mult = self.config.get_co2_avoidance_factor()
         self.db = sqlite3.connect(self.config.get_database_path(), check_same_thread=False)
         self.c = self.db.cursor()
+
+        self.local_timezone = datetime.now().astimezone().tzinfo
 
     def get(self, date):
         data = dict()
@@ -105,7 +107,10 @@ class Database():
                 GROUP BY TimeStamp
                 ''' % (day_start, day_end)
         self.c.execute(query)
-        data['total'] = self.c.fetchone()[0]
+        row = self.c.fetchone()
+        if row and row[0]: data['total'] = row[0]
+        else: data['total'] = 0
+
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
@@ -180,7 +185,7 @@ class Database():
         data = dict()
 
         month_start, month_end = self.get_epoch_month(date)
-        data['interval'] = {'from': month_start, 'to': month_end}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(month_start), 'to': self.convert_local_ts_to_utc(month_end)}
         month_total = 0
 
         query = '''
@@ -192,7 +197,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (month_start, month_end)):
-            data['data'].append({'time': row[0], 'power': row[1]})
+            data['data'].append({'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1]})
             month_total += row[1]
 
         data['total'] = month_total
@@ -216,7 +221,7 @@ class Database():
         data = dict()
 
         month_start, month_end = self.get_epoch_month(date)
-        data['interval'] = {'from': month_start, 'to': month_end}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(month_start), 'to': self.convert_local_ts_to_utc(month_end)}
         month_total = 0
 
         query = '''
@@ -227,7 +232,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (month_start, month_end, inverter_serial)):
-            data['data'].append({'time': row[0], 'power': row[1]})
+            data['data'].append({'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1]})
             month_total += row[1]
 
         data['total'] = month_total
@@ -272,24 +277,23 @@ class Database():
             } )
         return invs
 
+    def convert_local_ts_to_utc(self, ts):
+        return int(datetime.utcfromtimestamp(ts).astimezone(self.local_timezone).timestamp())
+
     def get_datetime(self, date):
         s = date.split('-')
         return datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00)
 
-    def get_epoch(self, date):
-        s = date.split('-')
-        return int(datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00).timestamp())
-
     def get_epoch_day(self, date):
         s = date.split('-')
-        epoch_start =  int(datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00).timestamp())
-        epoch_end =  int(datetime(int(s[0]), int(s[1]), int(s[2]), 23, 59, 59).timestamp())
+        epoch_start =  int(datetime(int(s[0]), int(s[1]), int(s[2]), 00, 00, 00, tzinfo=pytz.utc).timestamp())
+        epoch_end =  int(datetime(int(s[0]), int(s[1]), int(s[2]), 23, 59, 59, tzinfo=pytz.utc).timestamp())
         return epoch_start, epoch_end
 
     def get_epoch_month(self, date):
         s = date.split('-')
-        epoch_start = int(datetime(int(s[0]), int(s[1]), 1, 00, 00, 00).timestamp())
-        epoch_end = int(datetime(int(s[0]), int(s[1]), self.get_last_day_of_month(date), 23, 59, 59).timestamp())
+        epoch_start = int(datetime(int(s[0]), int(s[1]), 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
+        epoch_end = int(datetime(int(s[0]), int(s[1]), self.get_last_day_of_month(date), 23, 59, 59, tzinfo=pytz.utc).timestamp())
         return epoch_start, epoch_end
 
     def get_last_day_of_month(self, date):
@@ -301,9 +305,14 @@ class Database():
         self.db.close()
 
 if __name__ == '__main__':
-    db = Database('../SBFspot.db')
+
+    from config import Config
+    cfg = Config('../config.json')
+    db = Database(cfg)
 
     date = '2018-09-16'
 
-    data =  db.get(date)
-    print(json.dumps(data , indent=4))
+    #data =  db.get(date)
+    #print(json.dumps(data , indent=4))
+    print(1535842800)
+    print(db.convert_ts_to_utc(1535842800))
