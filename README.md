@@ -8,12 +8,11 @@ Inverters that do not support Speedwire or Bluetooth or that are not from the ma
 Current features:
 
 * Web based visualization of daily and monthly power production
-* Displaying multiple inverters
-* Translations: English, German
 * Mail notification service for inverter disorders and lack of production
 
 Planned features:
 
+* Grouped inverter visualisation
 * Visualization of yearly power production
 * Visualization of power consumption
 * Validation of `config.json` with [JSON Schema](https://json-schema.org/)
