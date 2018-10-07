@@ -14,7 +14,7 @@ class Mail:
         self.config = config
         self.db = database
         self.mail_config = self.config.get_mail_config()
-        self.is_enabled = self.mail_config["enabled"]
+        self.is_enabled = self.mail_config["enabled"] == 'true'
         self.stop_threads = False
         self.sent_messages = dict()
 

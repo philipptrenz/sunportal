@@ -34,7 +34,7 @@ def update():
 
 if __name__ == '__main__':
 	try:
-		if mail.is_enabled is True: mail.start()
+		if mail.is_enabled: mail.start()
 		app.run(host='0.0.0.0', port=80)
 	except:
 		db.close()
