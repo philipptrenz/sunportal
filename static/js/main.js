@@ -444,7 +444,13 @@ function loadData(day) {
             monthChart.update();
 
 			requesting = false;
-			reloadTimer = setTimeout(loadData, reloadTime);
+
+
+		    // only auto reload if selected date is today
+		    if (moment(currentDay).isSame(moment(), 'day')) {
+		        reloadTimer = setTimeout(loadData, reloadTime);
+		    }
+
 		}
 	});
 }
