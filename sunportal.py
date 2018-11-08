@@ -1,13 +1,12 @@
 #!/usr/bin/python3
 """
 """
-import flask, json
-from flask import Flask, render_template, request, json, jsonify
+import flask
+from flask import Flask, render_template, request, jsonify
 
 from util.config import Config
-from util.mail import Mail
 from util.database import Database
-
+from util.mail import Mail
 
 config = Config()
 db = Database(config=config)

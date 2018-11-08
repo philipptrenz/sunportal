@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 """
 """
-import sqlite3, json, pytz
-from datetime import datetime, timedelta, timezone
+import pytz
+import sqlite3
+from datetime import datetime, timedelta
+
 
 class Database():
 
@@ -84,9 +86,9 @@ class Database():
 
         query = '''
             SELECT TimeStamp, SUM(Power) AS Power 
-			FROM DayData 
-			WHERE TimeStamp BETWEEN %s AND %s 
-			GROUP BY TimeStamp;
+            FROM DayData 
+            WHERE TimeStamp BETWEEN %s AND %s 
+            GROUP BY TimeStamp;
         '''
 
         data['data'] = list()
@@ -114,7 +116,7 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
-			FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp );
+            FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp );
             '''
 
         self.c.execute(query)
