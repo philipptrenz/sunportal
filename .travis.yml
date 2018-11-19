@@ -3,7 +3,11 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+os:
+  - linux
+  - osx
 cache: pip
 install:
   - pip install flask pytz
 script:
+  - python util/test.py
