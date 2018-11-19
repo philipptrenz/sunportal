@@ -6,4 +6,3 @@ python:
 cache: pip
 install:
   - pip install flask pytz
-script:
