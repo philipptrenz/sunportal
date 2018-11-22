@@ -3,7 +3,7 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-  - "3.6"
+#  - "3.6" # pylint is not yet Python3.6 ready
 os:
   - linux
 cache: pip
