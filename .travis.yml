@@ -1,9 +1,8 @@
 language: python
 python:
-  - "3.3"
   - "3.4"
   - "3.5"
-#  - "3.6" # pylint is not yet Python3.6 ready
+  - "3.6"
 os:
   - linux
 cache: pip
