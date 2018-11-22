@@ -19,7 +19,7 @@ class Config():
             try:
                 with open('config.yml') as f:
                     self.config = yaml.load(f)
-            except OSError:
+            except Exception:
                 with open('config.default.yml') as f:
                     self.config = yaml.load(f)
 
