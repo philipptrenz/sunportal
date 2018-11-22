@@ -14,7 +14,7 @@ class Database():
         self.db = sqlite3.connect(self.config.get_database_path(), check_same_thread=False)
         self.c = self.db.cursor()
 
-        self.local_timezone = datetime.now(tz=pytz.utc).astimezone().tzinfo
+        self.local_timezone = self.get_local_timezone()
 
     def get(self, date):
         data = dict()
@@ -82,7 +82,7 @@ class Database():
         data = dict()
 
         day_start, day_end = self.get_epoch_day(date)
-        data['interval'] = {'from': self.convert_local_ts_to_utc(day_start), 'to': self.convert_local_ts_to_utc(day_end)}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(day_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(day_end, self.local_timezone)}
 
         query = '''
             SELECT TimeStamp, SUM(Power) AS Power 
@@ -135,7 +135,7 @@ class Database():
         data = dict()
 
         day_start, day_end = self.get_epoch_day(date)
-        data['interval'] = {'from': self.convert_local_ts_to_utc(day_start), 'to': self.convert_local_ts_to_utc(day_end)}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(day_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(day_end, self.local_timezone)}
 
         query = '''
             SELECT TimeStamp, Power 
@@ -164,7 +164,7 @@ class Database():
         if res and res[0]:
             data['total'] = res[0]
         else:
-            data['total']  = 0
+            data['total'] = 0
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
@@ -187,7 +187,7 @@ class Database():
         data = dict()
 
         month_start, month_end = self.get_epoch_month(date)
-        data['interval'] = {'from': self.convert_local_ts_to_utc(month_start), 'to': self.convert_local_ts_to_utc(month_end)}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(month_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(month_end, self.local_timezone)}
         month_total = 0
 
         query = '''
@@ -199,7 +199,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (month_start, month_end)):
-            data['data'].append({'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1]})
+            data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
 
         data['total'] = month_total
@@ -223,7 +223,7 @@ class Database():
         data = dict()
 
         month_start, month_end = self.get_epoch_month(date)
-        data['interval'] = {'from': self.convert_local_ts_to_utc(month_start), 'to': self.convert_local_ts_to_utc(month_end)}
+        data['interval'] = {'from': self.convert_local_ts_to_utc(month_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(month_end, self.local_timezone)}
         month_total = 0
 
         query = '''
@@ -234,7 +234,7 @@ class Database():
 
         data['data'] = list()
         for row in self.c.execute(query % (month_start, month_end, inverter_serial)):
-            data['data'].append({'time': self.convert_local_ts_to_utc(row[0]), 'power': row[1]})
+            data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
 
         data['total'] = month_total
@@ -279,8 +279,11 @@ class Database():
             } )
         return invs
 
-    def convert_local_ts_to_utc(self, ts):
-        return int(datetime.utcfromtimestamp(ts).replace(tzinfo=self.local_timezone).timestamp())
+    def get_local_timezone(self):
+        return datetime.now(tz=pytz.utc).astimezone().tzinfo
+
+    def convert_local_ts_to_utc(self, ts, local_timezone):
+        return int(datetime.utcfromtimestamp(ts).replace(tzinfo=local_timezone).timestamp())
 
     def get_datetime(self, date):
         s = date.split('-')
@@ -318,5 +321,5 @@ if __name__ == '__main__':
     #print(json.dumps(data , indent=4))
     ts = 1535842800
     print(ts, datetime.fromtimestamp(ts))
-    ts_new = db.convert_local_ts_to_utc(ts)
+    ts_new = db.convert_local_ts_to_utc(ts, db.local_timezone)
     print(ts_new, datetime.fromtimestamp(ts_new))
