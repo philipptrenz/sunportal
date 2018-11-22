@@ -18,7 +18,7 @@ Planned features:
 
 * Visualization of yearly power production
 * Visualization of power consumption
-* Validation of `config.yaml` with [JSON Schema](https://json-schema.org/)
+* Validation of `config.yml` with [JSON Schema](https://json-schema.org/)
 * Configuration of _sunportal_ via web interface
 * REST-API, i.e. to integrate solar power plants into home automation applications
 
@@ -52,7 +52,7 @@ cd sunportal
 
 ## Configure _sunportal_
 
-All configuration parameters of _sunportal_ get stored inside the `config.yaml` YAML file. To edit the preconfigured values copy the `config.default.yaml` and edit the `config.yaml`:
+All configuration parameters of _sunportal_ get stored inside the `config.yml` YAML file. To edit the preconfigured values copy the `config.default.yml` and edit the `config.yml`:
 
 ```bash
 cp config.default.yaml config.yaml

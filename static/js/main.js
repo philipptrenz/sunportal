@@ -59,7 +59,7 @@ function initializeCanvas() {
                     <div class="col-6 col-sm-4">
                         <h5 class="inverter-yield">
                             <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
-                            <span class="sr-only">Loading ...</span>
+                            <span class="sr-only">loading ...</span>
                         </h5>
                     </div>
 
@@ -80,7 +80,7 @@ function initializeCanvas() {
             <div class='chart col-12' id='chart-month-col'>
                 <div class="row">
                     <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
-                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'Monat' : 'month' ) +`</h5></div>
+                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'monat' : 'month' ) +`</h5></div>
                     <div class="col-6 col-sm-4">
                         <h5 class="inverter-yield">
                             <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>

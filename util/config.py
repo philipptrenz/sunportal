@@ -14,10 +14,10 @@ class Config():
                 self.config = yaml.load(f)
         else:
             try:
-                with open('config.yaml') as f:
+                with open('config.yml') as f:
                     self.config = yaml.load(f)
             except:
-                with open('config.default.yaml') as f:
+                with open('config.default.yml') as f:
                     self.config = yaml.load(f)
 
     def get_config(self):
@@ -47,6 +47,6 @@ class Config():
 
 if __name__ == '__main__':
 
-    cfg = Config(config_path='../config.yaml')
+    cfg = Config(config_path='../config.yml')
     print(cfg.get_config())
     print(cfg.get_co2_avoidance_factor())
