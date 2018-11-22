@@ -311,7 +311,7 @@ class Database():
 
 if __name__ == '__main__':
 
-    from config import Config
+    from util.config import Config
     cfg = Config('../config.json')
     db = Database(cfg)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """
 """
-import json, os.path
+import yaml, os.path
 from datetime import datetime
 
 class Config():
@@ -11,14 +11,14 @@ class Config():
 
         if config_path:
             with open(config_path) as f:
-                self.config = json.load(f)
+                self.config = yaml.load(f)
         else:
             try:
-                with open('config.json') as f:
-                    self.config = json.load(f)
+                with open('config.yaml') as f:
+                    self.config = yaml.load(f)
             except:
-                with open('config.default.json') as f:
-                    self.config = json.load(f)
+                with open('config.default.yaml') as f:
+                    self.config = yaml.load(f)
 
     def get_config(self):
         return self.config
@@ -43,3 +43,10 @@ class Config():
         ts = datetime.now()
         if error: print(' *', msg, '['+str(error)+']')
         else: print(' *', msg)
+
+
+if __name__ == '__main__':
+
+    cfg = Config(config_path='../config.yaml')
+    print(cfg.get_config())
+    print(cfg.get_co2_avoidance_factor())

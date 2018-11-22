@@ -8,6 +8,6 @@ os:
   - linux
 cache: pip
 install:
-  - pip install flask pytz
+  - pip install flask pytz pyyaml
 script:
   - python -m test.tests

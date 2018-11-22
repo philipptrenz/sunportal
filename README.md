@@ -18,7 +18,7 @@ Planned features:
 
 * Visualization of yearly power production
 * Visualization of power consumption
-* Validation of `config.json` with [JSON Schema](https://json-schema.org/)
+* Validation of `config.yaml` with [JSON Schema](https://json-schema.org/)
 * Configuration of _sunportal_ via web interface
 * REST-API, i.e. to integrate solar power plants into home automation applications
 
@@ -52,39 +52,41 @@ cd sunportal
 
 ## Configure _sunportal_
 
-All configuration parameters of _sunportal_ get stored inside the `config.json` json file. To edit the preconfigured values copy the `config.default.json` and edit the `config.json`:
+All configuration parameters of _sunportal_ get stored inside the `config.yaml` YAML file. To edit the preconfigured values copy the `config.default.yaml` and edit the `config.yaml`:
 
 ```bash
-cp config.default.json config.json
-nano config.json
+cp config.default.yaml config.yaml
+nano config.yaml
 ```
 
 Under `mail` you can enable the integrated mail notification service by adding an SMTP server.
 
-```json
-{
-	"database": {
-		"path": "/home/pi/smadata/SBFspot.db"
-	},
-	"co2_avoidance_factor": 0.7,       
-	"mail": {
-		"enabled": "false",
-		"check_interval": 300,         
-		"sender": "sunportal@example.com",
-		"smtp_server": {
-			"url": "smtp.example.com",
-			"port": 587
-		},
-		"recipients": [
-			"me@example.com"
-		],
-		"starttls": {
-			"enabled": "false",
-			"user": "",
-			"password": ""
-		}
-	}
-}
+```yaml
+---
+database:
+  path: "./SBFspot.db"
+co2_avoidance_factor: 0.7
+mail:
+  enabled: 'false'
+  check_interval: 300
+  sender: sunportal@example.com
+  smtp_server:
+    url: smtp.example.com
+    port: 587
+  recipients:
+  - me@example.com
+  starttls:
+    enabled: 'false'
+    user: ''
+    password: ''
+renaming:
+  '2000079685': Inverter 1
+  '2000098450': Inverter 2
+  '2000099075': Inverter 3
+  '2130309491': Inverter 4
+  '2130340030': Inverter 5
+
+
 ```
 
 ## Start _sunportal_

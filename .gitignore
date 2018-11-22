@@ -4,4 +4,6 @@
 .idea/
 __pycache__/
 config.json
+config.yaml
 .DS_Store
+*.pyc
