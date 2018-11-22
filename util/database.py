@@ -311,15 +311,4 @@ class Database():
 
 if __name__ == '__main__':
 
-    from util.config import Config
-    cfg = Config('../config.json')
-    db = Database(cfg)
-
-    date = '2018-09-16'
-
-    #data =  db.get(date)
-    #print(json.dumps(data , indent=4))
-    ts = 1535842800
-    print(ts, datetime.fromtimestamp(ts))
-    ts_new = db.convert_local_ts_to_utc(ts, db.local_timezone)
-    print(ts_new, datetime.fromtimestamp(ts_new))
+    print("nothing to do here")

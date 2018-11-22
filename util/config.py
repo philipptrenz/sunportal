@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 """
+Config module
+Reads configuration file
 """
-import yaml, os.path
-from datetime import datetime
+import yaml
+import os.path
 
 class Config():
+    """The Config class loads the config YAML file"""
 
     def __init__(self, config_path=None):
         self.config = dict()
@@ -16,7 +19,7 @@ class Config():
             try:
                 with open('config.yml') as f:
                     self.config = yaml.load(f)
-            except:
+            except OSError:
                 with open('config.default.yml') as f:
                     self.config = yaml.load(f)
 
@@ -31,7 +34,8 @@ class Config():
         if os.path.isfile(path):
             return self.config["database"]["path"]
         else:
-            raise Exception("sqlite database %s does not exist, check the config(.default).json!" % path)
+            msg = "sqlite database %s does not exist, check the config(.default).json!" % path
+            raise Exception(msg)
 
     def get_co2_avoidance_factor(self):
         return self.config["co2_avoidance_factor"]
@@ -40,7 +44,6 @@ class Config():
         return self.config["renaming"]
 
     def log(self, msg, error=''):
-        ts = datetime.now()
         if error: print(' *', msg, '['+str(error)+']')
         else: print(' *', msg)
 
