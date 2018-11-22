@@ -95,13 +95,10 @@ Open a browser and navigate to the IP address of the Raspberry Pi to see the web
 ### Run _sunportal_ on boot
 
 ```bash
-# make the scripts executable
-sudo chmod 755 sunportal.*
-
 # add the bash script to the service folder
-sudo cp sunportal.sh /etc/init.d/sunportal
+sudo cp scripts/sunportal.sh /etc/init.d/sunportal
+sudo chmod 755 /etc/init.d/sunportal
 sudo update-rc.d sunportal defaults
-
 ```
 
 Now _sunportal_ can be controlled as a service (`sudo service sunportal status`) and it automatically starts on boot.
