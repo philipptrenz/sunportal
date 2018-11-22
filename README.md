@@ -64,7 +64,7 @@ Under `mail` you can enable the integrated mail notification service by adding a
 ```yaml
 ---
 database:
-  path: "./SBFspot.db"
+  path: "/home/pi/smadata/SBFspot.db"
 co2_avoidance_factor: 0.7
 mail:
   enabled: 'false'
@@ -80,12 +80,7 @@ mail:
     user: ''
     password: ''
 renaming:
-  '2000079685': Inverter 1
-  '2000098450': Inverter 2
-  '2000099075': Inverter 3
-  '2130309491': Inverter 4
-  '2130340030': Inverter 5
-
+  '10000000001': My Inverter 1
 
 ```
 

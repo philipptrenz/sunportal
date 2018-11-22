@@ -1,6 +1,11 @@
 #!/usr/bin/python3
 """
+sunportal is a web based visualisation tool to display data of SMA solar inverters.
+It is based on the database of SBFspot and shows charts daily and monthly power
+production. It runs on a Raspberry Pi and can handle multiple inverters in one Speedwire
+or Bluetooth(R) network.
 """
+
 import flask
 from flask import Flask, render_template, request, jsonify
 
@@ -18,6 +23,7 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
+
 @app.route('/update', methods=['POST'])
 def update():
     if request.headers['Content-Type'] == 'application/json':
@@ -29,7 +35,7 @@ def update():
     else:
         flask.abort(400)
 
-###############################################
+
 
 if __name__ == '__main__':
     try:
