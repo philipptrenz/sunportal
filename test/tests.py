@@ -29,7 +29,7 @@ class TestDatabase(unittest.TestCase):
         with self.assertRaises(ValueError):
             Database.get_last_day_of_month(None, '2019-13-01')
 
-    def test_convert_local_ts_to_utc(self):
+    def test_convert_local_ts_to_utc_on_local_timezone(self):
         """
         The database sunportal uses contains timestamps not in UTC timezone (as per definition), but
         instead in local timezone. convert_local_ts_to_utc converts those timestamps back to UTC for
