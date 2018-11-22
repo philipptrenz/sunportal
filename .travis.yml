@@ -10,4 +10,4 @@ cache: pip
 install:
   - pip install flask pytz
 script:
-  - python test.tests.py
+  - python -m test.tests.py
