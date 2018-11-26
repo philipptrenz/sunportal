@@ -6,9 +6,14 @@ python:
 os:
   - linux
 cache: pip
+addons:
+  code_climate:
+    repo_token:
+      secure: "Ih329yT3CSYsMpGMVghFdkXs8F/kjW54OTm+ZNwH270wpyKgjrR0oK0osRT4rZmARA47v2Yltjs6KAJOLNF0OQCNY5gMSZROStMSL7yvw1TEHwuS+mEBOar1+0aJvm8eei2MWzvcCPMTlj4ijV9imykN4wenWzidGMHAtzlsS84V2AMw9BaRzHQg21sraWXi60J5AJNHYbABMSLHx51ogH521J3W9FIo/SloIJ7juzPIWYygT7wPpMcZxS1VigHhUPy5IG8san65huHMb/GEXIQKl5JLX7EqALeufy5/oYQCbWxtJdJ0i0Kl4QPLtSVMG8Gp4gJWilNvNAvRmuaZS9reGoL9ksGzRVriRF6kY8VjKls9gfSYcxytm+5H6FT4u4FfEaMej1eHKw9KVSeyna0zDaSm58kNjvgMqIT8y/RcJtqEL493z6nnCtxBpDkT+7+SWRmna+CHQV92pTSvsjVUtPTFrsw3ET8RE88qMQFJvzULetnl+/iLvcM9qXMWXZK87A/FIJA/IzXJMd+aK08fInumk023UbTKKnXM5osnQCDe2f4XDuR77963HTRTHrF2enad53ownHnC6fXtPBrh04FsrOY6Hzkx4VoWlwM6ly6wN8AXOWKVfpw+w1iZs9CDOrPLZ0xiYvyleg4vLL9nfOrf9zZedkWCuSeGjqI="
 install:
   - pip install flask pytz pyyaml pylint
 script:
   - pylint sunportal.py util --disable=R,C
   - python -m test.tests
+  - codeclimate-test-reporter --file .coverage
 
