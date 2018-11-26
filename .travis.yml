@@ -11,5 +11,4 @@ install:
 script:
   - pylint sunportal.py util --disable=R,C
   - python -m test.tests
-  - codeclimate-test-reporter --file .coverage
 
