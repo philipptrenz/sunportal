@@ -35,13 +35,6 @@ def update():
     else:
         flask.abort(400)
 
-
-@app.teardown_appcontext
-def close():
-    db.close()
-    mail.join()
-
-
 if __name__ == '__main__':
     if mail.is_enabled: mail.start()
     app.run(host='0.0.0.0', port=80)
