@@ -43,7 +43,7 @@ After that install _sunportal_:
 ```bash
 # install needed dependencies
 sudo apt-get install git python3 python3-pip 
-sudo pip install flask pytz
+sudo pip install flask pytz pyyaml
 
 # clone this repo
 git clone https://github.com/philipptrenz/sunportal
@@ -55,8 +55,8 @@ cd sunportal
 All configuration parameters of _sunportal_ get stored inside the `config.yml` YAML file. To edit the preconfigured values copy the `config.default.yml` and edit the `config.yml`:
 
 ```bash
-cp config.default.yaml config.yaml
-nano config.yaml
+cp config.default.yml config.yml
+nano config.yml
 ```
 
 Under `mail` you can enable the integrated mail notification service by adding an SMTP server.
