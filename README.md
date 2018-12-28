@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/philipptrenz/sunportal.svg?branch=tav)](https://travis-ci.org/philipptrenz/sunportal)
+[![Build Status](https://travis-ci.org/philipptrenz/sunportal.svg?branch=master)](https://travis-ci.org/philipptrenz/sunportal)
 
 # sunportal
 
