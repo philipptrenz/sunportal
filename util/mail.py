@@ -5,7 +5,6 @@
 import smtplib, threading, time
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 class Mail:
@@ -15,6 +14,7 @@ class Mail:
         self.db = database
         self.mail_config = self.config.get_mail_config()
         self.is_enabled = self.mail_config["enabled"] == 'true'
+        self.timer_thread = None
         self.stop_threads = False
         self.sent_messages = dict()
 
@@ -96,50 +96,50 @@ class Mail:
                     s.login(starttls["user"], starttls["password"])
                 s.sendmail(sender, recipients, msg.as_string())
 
-    def set_sent_mail(self, type, identifier, message_id, sent=True):
-        if type not in self.sent_messages: self.sent_messages[type] = { identifier: dict() }
+    def set_sent_mail(self, msg_type, identifier, message_id, sent=True):
+        if msg_type not in self.sent_messages: self.sent_messages[msg_type] = {identifier: dict()}
         if sent:
-            self.sent_messages[type][identifier] = {
+            self.sent_messages[msg_type][identifier] = {
                 'action': 'sent',
                 'time': datetime.now(),
                 'message_id': message_id
             }
         else:
-            self.sent_messages[type][identifier] = {
+            self.sent_messages[msg_type][identifier] = {
                 'action': 'cleared',
                 'time': datetime.now(),
                 'message_id': message_id
             }
 
-    def do_send_mail(self, type, identifier):
-        if type not in self.sent_messages: return True
-        if identifier not in self.sent_messages[type]: return True
-        i = self.sent_messages[type][identifier]
+    def do_send_mail(self, msg_type, identifier):
+        if msg_type not in self.sent_messages: return True
+        if identifier not in self.sent_messages[msg_type]: return True
+        i = self.sent_messages[msg_type][identifier]
         if i['action'] == 'sent' and i['time'] < (datetime.now() - timedelta(hours=24)):
             return True
         if i['action'] == 'cleared':
             return True
         return False
 
-    def do_send_clear_mail(self, type, identifier):
-        if type not in self.sent_messages: return False
-        if identifier not in self.sent_messages[type]: return False
-        i = self.sent_messages[type][identifier]
+    def do_send_clear_mail(self, msg_type, identifier):
+        if msg_type not in self.sent_messages: return False
+        if identifier not in self.sent_messages[msg_type]: return False
+        i = self.sent_messages[msg_type][identifier]
         if i['action'] == 'sent': return True
         return False
 
-    def get_message_id(self, type, identifier):
-        if type not in self.sent_messages: return None
-        if identifier not in self.sent_messages[type]: return None
-        return self.sent_messages[type][identifier]['message_id']
+    def get_message_id(self, msg_type, identifier):
+        if msg_type not in self.sent_messages: return None
+        if identifier not in self.sent_messages[msg_type]: return None
+        return self.sent_messages[msg_type][identifier]['message_id']
 
     def join(self):
         self.stop_threads = True
 
 if __name__ == '__main__':
 
-    from database import Database
-    from config import Config
+    from util.database import Database
+    from util.config import Config
 
     cfg = Config(config_path='../config.json')
     db = Database(cfg)

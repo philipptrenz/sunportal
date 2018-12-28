@@ -1,0 +1,14 @@
+language: python
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+os:
+  - linux
+cache: pip
+install:
+  - pip install flask pytz pyyaml pylint
+script:
+  - pylint sunportal.py util --disable=R,C
+  - python -m test.tests
+

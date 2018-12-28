@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/philipptrenz/sunportal.svg?branch=tav)](https://travis-ci.org/philipptrenz/sunportal)
+
 # sunportal
 
 _sunportal_ is a web based visualisation tool to display data of SMA solar inverters. It is based on the database of [SBFspot](https://github.com/SBFspot/SBFspot) and shows charts daily and monthly power production. It runs on a Raspberry Pi and can handle multiple inverters in one Speedwire or Bluetooth(R) network.
@@ -16,7 +18,7 @@ Planned features:
 
 * Visualization of yearly power production
 * Visualization of power consumption
-* Validation of `config.json` with [JSON Schema](https://json-schema.org/)
+* Validation of `config.yml` with [JSON Schema](https://json-schema.org/)
 * Configuration of _sunportal_ via web interface
 * REST-API, i.e. to integrate solar power plants into home automation applications
 
@@ -50,39 +52,36 @@ cd sunportal
 
 ## Configure _sunportal_
 
-All configuration parameters of _sunportal_ get stored inside the `config.json` json file. To edit the preconfigured values copy the `config.default.json` and edit the `config.json`:
+All configuration parameters of _sunportal_ get stored inside the `config.yml` YAML file. To edit the preconfigured values copy the `config.default.yml` and edit the `config.yml`:
 
 ```bash
-cp config.default.json config.json
-nano config.json
+cp config.default.yaml config.yaml
+nano config.yaml
 ```
 
 Under `mail` you can enable the integrated mail notification service by adding an SMTP server.
 
-```json
-{
-	"database": {
-		"path": "/home/pi/smadata/SBFspot.db"
-	},
-	"co2_avoidance_factor": 0.7,       
-	"mail": {
-		"enabled": "false",
-		"check_interval": 300,         
-		"sender": "sunportal@example.com",
-		"smtp_server": {
-			"url": "smtp.example.com",
-			"port": 587
-		},
-		"recipients": [
-			"me@example.com"
-		],
-		"starttls": {
-			"enabled": "false",
-			"user": "",
-			"password": ""
-		}
-	}
-}
+```yaml
+---
+database:
+  path: "/home/pi/smadata/SBFspot.db"
+co2_avoidance_factor: 0.7
+mail:
+  enabled: 'false'
+  check_interval: 300
+  sender: sunportal@example.com
+  smtp_server:
+    url: smtp.example.com
+    port: 587
+  recipients:
+  - me@example.com
+  starttls:
+    enabled: 'false'
+    user: ''
+    password: ''
+renaming:
+  '10000000001': My Inverter 1
+
 ```
 
 ## Start _sunportal_
@@ -96,13 +95,10 @@ Open a browser and navigate to the IP address of the Raspberry Pi to see the web
 ### Run _sunportal_ on boot
 
 ```bash
-# make the scripts executable
-sudo chmod 755 sunportal.*
-
 # add the bash script to the service folder
-sudo cp sunportal.sh /etc/init.d/sunportal
+sudo cp scripts/sunportal.sh /etc/init.d/sunportal
+sudo chmod 755 /etc/init.d/sunportal
 sudo update-rc.d sunportal defaults
-
 ```
 
 Now _sunportal_ can be controlled as a service (`sudo service sunportal status`) and it automatically starts on boot.

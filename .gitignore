@@ -3,5 +3,7 @@
 *.db-wal
 .idea/
 __pycache__/
-config.json
 .DS_Store
+config.json
+config.yml
+*.pyc
