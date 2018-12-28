@@ -8,4 +8,7 @@ os:
 cache: pip
 install:
   - pip install flask pytz pyyaml pylint
+script:
+  - pylint sunportal.py util --disable=R,C
+  - python -m test.tests
 
