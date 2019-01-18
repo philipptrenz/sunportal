@@ -8,6 +8,7 @@ or Bluetooth(R) network.
 
 import flask
 from flask import Flask, render_template, request, jsonify
+from flask_expects_json import expects_json
 
 from util.config import Config
 from util.database import Database
@@ -18,6 +19,14 @@ db = Database(config=config)
 mail = Mail(config, db)
 app = Flask(__name__)
 
+schema = {
+    'type': 'object',
+    'properties': {
+        'date': {'type': 'string', "pattern": "^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$"},
+    },
+    'required': ['date']
+}
+
 
 @app.route('/')
 def home():
@@ -25,6 +34,7 @@ def home():
 
 
 @app.route('/update', methods=['POST'])
+@expects_json(schema)
 def update():
     if request.headers['Content-Type'] == 'application/json':
         content = request.json
