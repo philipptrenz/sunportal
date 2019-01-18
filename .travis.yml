@@ -7,7 +7,7 @@ os:
   - linux
 cache: pip
 install:
-  - pip install -r requirements.txt
+  - pip3 install -r requirements.txt 
 script:
   - pylint sunportal.py util --disable=R,C
   - python -m test.tests
