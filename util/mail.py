@@ -141,7 +141,7 @@ if __name__ == '__main__':
     from util.database import Database
     from util.config import Config
 
-    cfg = Config(config_path='../config.json')
+    cfg = Config(config_path='../config.yml')
     db = Database(cfg)
 
     mail = Mail(cfg, db)
