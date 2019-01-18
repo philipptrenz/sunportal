@@ -1,1 +1,5 @@
-flask flask-expects-json pytz pyyaml pylint
+flask
+flask-expects-json
+pytz
+pyyaml
+pylint
