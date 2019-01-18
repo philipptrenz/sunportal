@@ -87,12 +87,12 @@ class Database():
         query = '''
             SELECT TimeStamp, SUM(Power) AS Power 
             FROM DayData 
-            WHERE TimeStamp BETWEEN %s AND %s 
+            WHERE TimeStamp BETWEEN ? AND ?
             GROUP BY TimeStamp;
         '''
 
         data['data'] = list()
-        for row in self.c.execute(query % (day_start, day_end)):
+        for row in self.c.execute(query, (day_start, day_end)):
             data['data'].append({ 'time': row[0], 'power': row[1] })
 
 
@@ -101,14 +101,16 @@ class Database():
                 SELECT SUM(EToday) as EToday
                 FROM Inverters;
                 '''
+            self.c.execute(query)
         else:
             query = '''
                 SELECT SUM(DayYield) AS Power 
                 FROM MonthData 
-                WHERE TimeStamp BETWEEN %s AND %s
-                GROUP BY TimeStamp
-                ''' % (day_start, day_end)
-        self.c.execute(query)
+                WHERE TimeStamp BETWEEN ? AND ?
+                GROUP BY TimeStamp;
+                '''
+            self.c.execute(query, (day_start, day_end))
+
         row = self.c.fetchone()
         if row and row[0]: data['total'] = row[0]
         else: data['total'] = 0
@@ -140,26 +142,28 @@ class Database():
         query = '''
             SELECT TimeStamp, Power 
             FROM DayData 
-            WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s;
+            WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
             '''
 
         data['data'] = list()
-        for row in self.c.execute(query % (day_start, day_end, inverter_serial)):
+        for row in self.c.execute(query, (day_start, day_end, inverter_serial)):
             data['data'].append({'time': row[0], 'power': row[1]})
 
         if self.get_datetime(date).date() == datetime.today().date():
             query = '''
                 SELECT EToday
                 FROM Inverters
-                WHERE Serial = %s;
-                ''' % inverter_serial
+                WHERE Serial=?;
+                '''
+            self.c.execute(query, (inverter_serial,))
         else:
             query = '''
                 SELECT DayYield AS Power 
                 FROM MonthData 
-                WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
-                ''' % (day_start, day_end, inverter_serial)
-        self.c.execute(query)
+                WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
+                '''
+            self.c.execute(query, (day_start, day_end, inverter_serial))
+
         res = self.c.fetchone()
         if res and res[0]:
             data['total'] = res[0]
@@ -168,10 +172,10 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
-            FROM ( SELECT TimeStamp FROM DayData WHERE Serial = %s );
-            ''' % inverter_serial
+            FROM ( SELECT TimeStamp FROM DayData WHERE Serial=? );
+            '''
 
-        self.c.execute(query)
+        self.c.execute(query, (inverter_serial,))
         first_data, last_data = self.c.fetchone()
 
         if (first_data): data['hasPrevious'] = (first_data < day_start)
@@ -193,12 +197,12 @@ class Database():
         query = '''
             SELECT TimeStamp, SUM(DayYield) AS Power 
             FROM MonthData 
-            WHERE TimeStamp BETWEEN %s AND %s
-            GROUP BY TimeStamp
+            WHERE TimeStamp BETWEEN ? AND ?
+            GROUP BY TimeStamp;
             '''
 
         data['data'] = list()
-        for row in self.c.execute(query % (month_start, month_end)):
+        for row in self.c.execute(query, (month_start, month_end)):
             data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
 
@@ -229,11 +233,11 @@ class Database():
         query = '''
             SELECT TimeStamp, DayYield AS Power 
             FROM MonthData 
-            WHERE TimeStamp BETWEEN %s AND %s AND Serial = %s
+            WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
             '''
 
         data['data'] = list()
-        for row in self.c.execute(query % (month_start, month_end, inverter_serial)):
+        for row in self.c.execute(query, (month_start, month_end, inverter_serial)):
             data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
 
@@ -242,10 +246,10 @@ class Database():
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
             FROM MonthData 
-            WHERE Serial = %s;
-            ''' % inverter_serial
+            WHERE Serial=?;
+            '''
 
-        self.c.execute(query)
+        self.c.execute(query, (inverter_serial,))
         first_data, last_data = self.c.fetchone()
 
         if first_data: data['hasPrevious'] = (first_data < month_start)
