@@ -18,6 +18,8 @@ $(document).ready(function () {
 	if (usrLang.indexOf('de') !== -1) langCode = 'de';
 	else langCode = 'en';
 	$('body').attr( "id",'lang-'+langCode);
+	moment.locale(langCode);
+    console.log(langCode, moment.locale(langCode));
 
 	/* ----- show content ------ */
 	initializeCanvas();
@@ -55,7 +57,7 @@ function initializeCanvas() {
             <div class='chart col-12' id='chart-day-col'>
                 <div class="row">
                     <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
-                    <div class="d-none d-sm-block col-sm-4"><h5 class="inverter-name">`+ ((langCode == 'de') ? 'Tag' : 'day' ) +`</h5></div>
+                    <div class="d-none d-sm-block col-sm-4"><h5 class="inverter-name">`+ ((langCode == 'de') ? 'tag' : 'day' ) +`</h5></div>
                     <div class="col-6 col-sm-4">
                         <h5 class="inverter-yield">
                             <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
@@ -306,7 +308,7 @@ function loadData(day) {
 	            ];
 
                 // update month chart
-	            $("#chart-month-col .chart-date").text(getMonthStringForPrint());
+	            $("#chart-month-col .chart-date").text( getMonthStringForPrint() );
 	            $("#chart-month-col .inverter-yield").text( addPrefix(all.month.total) + "Wh");
 
 	            // show or hide navigation arrows on day chart
@@ -532,8 +534,9 @@ function getDayStringForPrint() {
 
 function getMonthStringForPrint() {
 	var date = moment(currentDay).format('YYYY-MM-DD');
+	console.log('debug', moment(date).locale(langCode));
 	if (currentDay) {
-		return moment(date).locale(langCode).format('MMMM YYYY').toLowerCase();		
+		return moment(date).locale(langCode).format('MMMM YYYY').toLowerCase();
 	} else {
 		return '';
 	}
