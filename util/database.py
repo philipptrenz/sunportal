@@ -67,9 +67,6 @@ class Database():
         data['all']['month'] = self.get_requested_month(date)
         data['all']['year'] = self.get_requested_year(date)
 
-        # TODO
-        self.get_requested_year(date)
-
         data['inverters'] = dict()
 
         inverters = self.get_inverters()
