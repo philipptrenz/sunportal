@@ -75,8 +75,9 @@ function initializeCanvas() {
                 </div>
             </div>
          `;
+         $( "#charts" ).append( htmlDayChart );
     }
-     if ( !$( "#chart-month" ).length ) {
+    if ( !$( "#chart-month" ).length ) {
 
          var htmlMonthChart = `
             <div class='chart col-12' id='chart-month-col'>
@@ -100,11 +101,37 @@ function initializeCanvas() {
                 </div>
             </div>
          `;
+         $( "#charts" ).append( htmlMonthChart );
 
+    }
 
-        $( "#charts" ).append( htmlDayChart );
-        $( "#charts" ).append( htmlMonthChart );
-	}
+    if ( !$( "#chart-year" ).length ) {
+
+         var htmlYearChart = `
+            <div class='chart col-12' id='chart-year-col'>
+                <div class="row">
+                    <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
+                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'jahr' : 'year' ) +`</h5></div>
+                    <div class="col-6 col-sm-4">
+                        <h5 class="inverter-yield">
+                            <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+                            <span class="sr-only">Loading ...</span>
+                        </h5>
+                    </div>
+
+                </div>
+                <div class="chart-container">
+                    <i class="fa fa-chevron-left navigation-chevrons navigation-left" onclick="navigate(this)" style="visibility: hidden;"></i>
+                    <div class="chart-container-inner">
+                        <canvas id='`+`chart-year' class='chart-canvas' height='300px'/>
+                    </div>
+                    <i class="fa fa-chevron-right navigation-chevrons navigation-right" onclick="navigate(this)" style="visibility: hidden;"></i>
+                </div>
+            </div>
+         `;
+        $( "#charts" ).append( htmlYearChart );
+    }
+
 }
 
 
@@ -230,9 +257,68 @@ function initializeCharts(serial) {
 				}
 			}
 	    }
-	});;
+	});
 
-	charts = { day: new_day_chart, month: new_month_chart };
+	var ctx_year = document.getElementById( "chart-year" ).getContext('2d');
+	var new_year_chart = new Chart(ctx_year, {
+	    type: 'bar',
+	    data: {
+	        labels: [],
+	        datasets: [ {} ]
+	    },
+	    options: {
+	    	responsive: true,
+	    	animation: {
+	    		duration: 1000,
+	    		easing: 'easeInOutSine'
+	    	},
+	    	maintainAspectRatio: false,
+	        scales: {
+	            yAxes: [{
+	                ticks: {
+	                    beginAtZero: true,
+	                    fontColor: 'rgba(255,255,255,1)',
+	                    fontSize: 14
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					},
+				    stacked: true
+	            }],
+	            xAxes: [{
+	            	display: true,
+	            	type: 'time',
+	            	time: {
+                        unit: 'month'
+                    },
+	                ticks: {
+	                    fontColor: 'rgba(255,255,255,1)'
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					},
+					stacked: true
+	            }]
+	        },
+	        legend: {
+	        	labels: {
+	        		fontColor: 'rgba(255,255,255,1)'
+	        	}
+	        },
+			tooltips: {
+				callbacks: {
+					title: function(t, d) {
+						if (langCode == 'de')
+							return moment(t[0].xLabel).format('MMMM');
+						else
+							return moment(t[0].xLabel).format('MMMM');
+					}
+				}
+			}
+	    }
+	});
+
+	charts = { day: new_day_chart, month: new_month_chart, year: new_year_chart };
 }
 
 var requesting = false;
@@ -282,6 +368,7 @@ function loadData(day) {
 
 	        var dayChart = charts.day;
 	        var monthChart = charts.month;
+	        var yearChart = charts.year;
 	        var currentDayDate =  moment(currentDay).format('YYYY-MM-DD');
 
 	        var all = response.requested.all;
@@ -327,6 +414,27 @@ function loadData(day) {
 	                all.month.interval.to
 	            ];
 
+
+	            // update year chart
+	            $("#chart-year-col .chart-date").text( getYearStringForPrint() );
+	            $("#chart-year-col .inverter-yield").text( addPrefix(all.year.total) + "Wh");
+
+	            // show or hide navigation arrows on day chart
+	            $("#chart-year-col .navigation-right").each(function() {
+	                $(this).css("visibility", (all.year.hasNext ? "visible" : "hidden"));
+	            });
+	            $("#chart-year-col .navigation-left").each(function() {
+	                $(this).css("visibility", (all.year.hasPrevious ? "visible" : "hidden"));
+	            });
+
+	            // update scale
+	            all.year.interval.from = moment.unix(all.year.interval.from).subtract(30.4, 'days'); // data has first day of month as data point
+	            all.year.interval.to = moment.unix(all.year.interval.to);
+	            yearChart.data.labels = [
+	                all.year.interval.from,
+	                all.year.interval.to
+	            ];
+
 	        }
 
 	        var chart_num = 0;
@@ -361,7 +469,7 @@ function loadData(day) {
                         }
 
                     }
-                      if (inv_data.month.data.length > 0) {
+                    if (inv_data.month.data.length > 0) {
                         // for month data with missing timestamps at the beginning
                         if (all.month.data[0].time < inv_data.month.data[0].time) {
                             var tmp = [], i = 0;
@@ -372,6 +480,20 @@ function loadData(day) {
                             }
                             var tmp2 = tmp.concat(inv_data.month.data);
                             inv_data.month.data = tmp2;
+                        }
+                    }
+
+                    if (inv_data.year.data.length > 0) {
+                        // for month data with missing timestamps at the beginning
+                        if (all.year.data[0].time < inv_data.year.data[0].time) {
+                            var tmp = [], i = 0;
+                            var first_ts = inv_data.year.data[0].time;
+                            while (all.year.data[i].time < first_ts) {
+                                tmp.push( { 'time': all.year.data[i].time, 'power': 0 } );
+                                i++;
+                            }
+                            var tmp2 = tmp.concat(inv_data.year.data);
+                            inv_data.year.data = tmp2;
                         }
                     }
                     // WORKAROUND FOR CHART.JS BUG END
@@ -405,8 +527,6 @@ function loadData(day) {
                         delete obj.power;
                     })
 
-
-
                     var is_label_not_defined = (monthChart.data.datasets[chart_num] && (monthChart.data.datasets[chart_num].label != response.today.inverters[k].name))
                     if ( is_label_not_defined || !monthChart.data.datasets[chart_num]) {
                         monthChart.data.datasets[chart_num] = {
@@ -419,12 +539,35 @@ function loadData(day) {
                         monthChart.data.datasets[chart_num].data = inv_data.month.data;
                     }
 
+
+                    // update year chart
+                    inv_data.year.data.forEach(function(obj) {
+                        time = moment.unix(obj.time).startOf('month');
+
+                        if (!moment(time).isSame(moment(), 'month')) {
+                            obj.x = time;
+                            obj.y = obj.power / 1000;
+                        }
+                        delete obj.time;
+                        delete obj.power;
+                    })
+
+                    var is_label_not_defined = (yearChart.data.datasets[chart_num] && (yearChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+                    if ( is_label_not_defined || !yearChart.data.datasets[chart_num]) {
+                        yearChart.data.datasets[chart_num] = {
+                            label: response.today.inverters[k].name,
+                            data: inv_data.year.data,
+                            borderWidth: 1,
+                            pointRadius: 0
+                        }
+                    } else {
+                        yearChart.data.datasets[chart_num].data = inv_data.year.data;
+                    }
+
+
                     chart_num++;
                 }
             }
-
-
-
 
             var backgroundColorShades   = getColorShades(dayChart.data.datasets.length, 'rgba(227,6,19,0.3)')
             var borderColorShades       = getColorShades(dayChart.data.datasets.length, 'rgba(227,6,19,1)')
@@ -444,6 +587,14 @@ function loadData(day) {
                 obj.borderColor = borderColorShades[i];
             }
             monthChart.update();
+
+            yearChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
+            for (var i=0; i<yearChart.data.datasets.length; i++) {
+                obj = yearChart.data.datasets[i];
+                obj.backgroundColor = backgroundColorShades[i];
+                obj.borderColor = borderColorShades[i];
+            }
+            yearChart.update();
 
 			requesting = false;
 
@@ -478,6 +629,12 @@ function navigate(self) {
 		} else if ( $(self).hasClass('navigation-right') ){
 			navigateOneMonth(currentDay, 'forwards');
 		}
+	} else if (id.includes('year')) {
+		if ( $(self).hasClass('navigation-left') ){
+			navigateOneYear(currentDay, 'backwards');
+		} else if ( $(self).hasClass('navigation-right') ){
+			navigateOneYear(currentDay, 'forwards');
+		}
 	}
 
 }
@@ -509,6 +666,20 @@ function navigateOneMonth(dayString, direction) {
 	}
 }
 
+function navigateOneYear(dayString, direction) {
+	var date = moment(dayString).format('YYYY-MM-DD');
+
+	if (direction == 'forwards') {
+		date = moment(date).add(1, 'years').format("YYYY-MM-DD");
+		currentDay = date;
+		loadData();
+	} else if (direction == 'backwards') {
+		date = moment(date).subtract(1, 'years').format("YYYY-MM-DD");
+		currentDay = date;
+		loadData();
+	}
+}
+
 function setCurrentDay(newDay) {
 	if (newDay) currentDay = newDay;
 	else currentDay = new Date().toISOString().slice(0,10);
@@ -534,9 +705,20 @@ function getDayStringForPrint() {
 
 function getMonthStringForPrint() {
 	var date = moment(currentDay).format('YYYY-MM-DD');
-	console.log('debug', moment(date).locale(langCode));
+	//console.log('debug', moment(date).locale(langCode));
 	if (currentDay) {
 		return moment(date).locale(langCode).format('MMMM YYYY').toLowerCase();
+	} else {
+		return '';
+	}
+}
+
+
+function getYearStringForPrint() {
+	var date = moment(currentDay).format('YYYY-MM-DD');
+	//console.log('debug', moment(date).locale(langCode));
+	if (currentDay) {
+		return moment(date).locale(langCode).format('YYYY').toLowerCase();
 	} else {
 		return '';
 	}
