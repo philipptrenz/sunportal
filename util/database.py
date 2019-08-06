@@ -377,6 +377,10 @@ class Database():
         renamings = self.config.get_renamings()
         for row in self.c.execute(query):
             serial = str(row[0])
+
+            if serial == "0":
+                continue
+
             name = row[1]
             if serial in renamings.keys():
                 name = renamings[serial]
