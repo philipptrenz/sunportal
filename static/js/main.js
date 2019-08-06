@@ -132,6 +132,33 @@ function initializeCanvas() {
         $( "#charts" ).append( htmlYearChart );
     }
 
+    if ( !$( "#chart-tot" ).length ) {
+
+         var htmlTotChart = `
+            <div class='chart col-12' id='chart-year-col'>
+                <div class="row">
+                    <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
+                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'total' : 'total' ) +`</h5></div>
+                    <div class="col-6 col-sm-4">
+                        <h5 class="inverter-yield">
+                            <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+                            <span class="sr-only">Loading ...</span>
+                        </h5>
+                    </div>
+
+                </div>
+                <div class="chart-container">
+                    <i class="fa fa-chevron-left navigation-chevrons navigation-left" onclick="navigate(this)" style="visibility: hidden;"></i>
+                    <div class="chart-container-inner">
+                        <canvas id='`+`chart-tot' class='chart-canvas' height='300px'/>
+                    </div>
+                    <i class="fa fa-chevron-right navigation-chevrons navigation-right" onclick="navigate(this)" style="visibility: hidden;"></i>
+                </div>
+            </div>
+         `;
+        $( "#charts" ).append( htmlTotChart );
+    }
+
 }
 
 
@@ -318,7 +345,66 @@ function initializeCharts(serial) {
 	    }
 	});
 
-	charts = { day: new_day_chart, month: new_month_chart, year: new_year_chart };
+	var ctx_tot = document.getElementById( "chart-tot" ).getContext('2d');
+	var new_tot_chart = new Chart(ctx_tot, {
+	    type: 'bar',
+	    data: {
+	        labels: [],
+	        datasets: [ {} ]
+	    },
+	    options: {
+	    	responsive: true,
+	    	animation: {
+	    		duration: 1000,
+	    		easing: 'easeInOutSine'
+	    	},
+	    	maintainAspectRatio: false,
+	        scales: {
+	            yAxes: [{
+	                ticks: {
+	                    beginAtZero: true,
+	                    fontColor: 'rgba(255,255,255,1)',
+	                    fontSize: 14
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					},
+				    stacked: true
+	            }],
+	            xAxes: [{
+	            	display: true,
+	            	type: 'time',
+	            	time: {
+                        unit: 'year'
+                    },
+	                ticks: {
+	                    fontColor: 'rgba(255,255,255,1)'
+	                },
+					gridLines: {
+						color: 'rgba(255,255,255,0.1)'
+					},
+					stacked: true
+	            }]
+	        },
+	        legend: {
+	        	labels: {
+	        		fontColor: 'rgba(255,255,255,1)'
+	        	}
+	        },
+			tooltips: {
+				callbacks: {
+					title: function(t, d) {
+						if (langCode == 'de')
+							return moment(t[0].xLabel).format('YYYY');
+						else
+							return moment(t[0].xLabel).format('YYYY');
+					}
+				}
+			}
+	    }
+	});
+
+	charts = { day: new_day_chart, month: new_month_chart, year: new_year_chart, tot: new_tot_chart };
 }
 
 var requesting = false;
@@ -330,20 +416,20 @@ function loadData(day) {
 
 	clearTimeout(reloadTimer);
 
-	var request_data = { 
-		date: currentDay 
+	var request_data = {
+		date: currentDay
 	};
 
 //	$('.chart-date').each(function() {
 //		$(this).text('');
 //	});
 	$('.inverter-yield').each(function() {
-		if (! $(this).has('i.fa-circle-o-notch').length) 
+		if (! $(this).has('i.fa-circle-o-notch').length)
 			$(this).html('<i class="fa fa-circle-o-notch fa-spin fa-fw"></i><span class="sr-only">Loading ...</span>');
 	});
 
 	//console.log("Requesting data for "+currentDay+" ...");
-	$.ajax({ 
+	$.ajax({
 		type : "POST",
         url : "/update",
         data: JSON.stringify(request_data, null, '\t'),
@@ -369,6 +455,7 @@ function loadData(day) {
 	        var dayChart = charts.day;
 	        var monthChart = charts.month;
 	        var yearChart = charts.year;
+	        var totChart = charts.tot;
 	        var currentDayDate =  moment(currentDay).format('YYYY-MM-DD');
 
 	        var all = response.requested.all;
@@ -435,6 +522,19 @@ function loadData(day) {
 	                all.year.interval.to
 	            ];
 
+
+	            // update year chart
+	            $("#chart-year-col .chart-date").text( 'total' );
+	            $("#chart-year-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
+
+	            // update scale
+	            all.tot.interval.from = moment.unix(all.tot.interval.from);
+	            all.tot.interval.to = moment.unix(all.tot.interval.to);
+	            totChart.data.labels = [
+	                all.tot.interval.from,
+	                all.tot.interval.to
+	            ];
+
 	        }
 
 	        var chart_num = 0;
@@ -494,6 +594,20 @@ function loadData(day) {
                             }
                             var tmp2 = tmp.concat(inv_data.year.data);
                             inv_data.year.data = tmp2;
+                        }
+                    }
+
+                    if (inv_data.tot.data.length > 0) {
+                        // for month data with missing timestamps at the beginning
+                        if (all.tot.data[0].time < inv_data.tot.data[0].time) {
+                            var tmp = [], i = 0;
+                            var first_ts = inv_data.tot.data[0].time;
+                            while (all.tot.data[i].time < first_ts) {
+                                tmp.push( { 'time': all.tot.data[i].time, 'power': 0 } );
+                                i++;
+                            }
+                            var tmp2 = tmp.concat(inv_data.tot.data);
+                            inv_data.tot.data = tmp2;
                         }
                     }
                     // WORKAROUND FOR CHART.JS BUG END
@@ -565,6 +679,31 @@ function loadData(day) {
                     }
 
 
+                    // update tot chart
+                    inv_data.tot.data.forEach(function(obj) {
+                        time = moment.unix(obj.time).startOf('year');
+
+                        if (!moment(time).isSame(moment(), 'year')) {
+                            obj.x = time;
+                            obj.y = obj.power / 1000;
+                        }
+                        delete obj.time;
+                        delete obj.power;
+                    })
+
+                    var is_label_not_defined = (totChart.data.datasets[chart_num] && (totChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+                    if ( is_label_not_defined || !totChart.data.datasets[chart_num]) {
+                        totChart.data.datasets[chart_num] = {
+                            label: response.today.inverters[k].name,
+                            data: inv_data.tot.data,
+                            borderWidth: 1,
+                            pointRadius: 0
+                        }
+                    } else {
+                        totChart.data.datasets[chart_num].data = inv_data.tot.data;
+                    }
+
+
                     chart_num++;
                 }
             }
@@ -595,6 +734,14 @@ function loadData(day) {
                 obj.borderColor = borderColorShades[i];
             }
             yearChart.update();
+
+            totChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
+            for (var i=0; i<totChart.data.datasets.length; i++) {
+                obj = totChart.data.datasets[i];
+                obj.backgroundColor = backgroundColorShades[i];
+                obj.borderColor = borderColorShades[i];
+            }
+            totChart.update();
 
 			requesting = false;
 
@@ -697,10 +844,10 @@ function getDayStringForPrint() {
 			return moment(date).format('DD.MM.YYYY');
 		} else {
 			return moment(date).format('YYYY/MM/DD');
-		}		
+		}
 	} else {
 		return '';
-	}	
+	}
 }
 
 function getMonthStringForPrint() {

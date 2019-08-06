@@ -66,6 +66,7 @@ class Database():
         data['all']['day'] = self.get_requested_day(date)
         data['all']['month'] = self.get_requested_month(date)
         data['all']['year'] = self.get_requested_year(date)
+        data['all']['tot'] = self.get_requested_tot()
 
         data['inverters'] = dict()
 
@@ -76,6 +77,7 @@ class Database():
             data['inverters'][inv['serial']]['day'] = self.get_requested_day_for_inverter(inv['serial'], date)
             data['inverters'][inv['serial']]['month'] = self.get_requested_month_for_inverter(inv['serial'], date)
             data['inverters'][inv['serial']]['year'] = self.get_requested_year_for_inverter(inv['serial'], date)
+            data['inverters'][inv['serial']]['tot'] = self.get_requested_tot_for_inverter(inv['serial'])
 
         return data
 
@@ -87,8 +89,8 @@ class Database():
         data['interval'] = {'from': self.convert_local_ts_to_utc(day_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(day_end, self.local_timezone)}
 
         query = '''
-            SELECT TimeStamp, SUM(Power) AS Power 
-            FROM DayData 
+            SELECT TimeStamp, SUM(Power) AS Power
+            FROM DayData
             WHERE TimeStamp BETWEEN ? AND ?
             GROUP BY TimeStamp;
         '''
@@ -106,8 +108,8 @@ class Database():
             self.c.execute(query)
         else:
             query = '''
-                SELECT SUM(DayYield) AS Power 
-                FROM MonthData 
+                SELECT SUM(DayYield) AS Power
+                FROM MonthData
                 WHERE TimeStamp BETWEEN ? AND ?
                 GROUP BY TimeStamp;
                 '''
@@ -119,7 +121,7 @@ class Database():
 
 
         query = '''
-            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp );
             '''
 
@@ -142,8 +144,8 @@ class Database():
         data['interval'] = {'from': self.convert_local_ts_to_utc(day_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(day_end, self.local_timezone)}
 
         query = '''
-            SELECT TimeStamp, Power 
-            FROM DayData 
+            SELECT TimeStamp, Power
+            FROM DayData
             WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
             '''
 
@@ -160,8 +162,8 @@ class Database():
             self.c.execute(query, (inverter_serial,))
         else:
             query = '''
-                SELECT DayYield AS Power 
-                FROM MonthData 
+                SELECT DayYield AS Power
+                FROM MonthData
                 WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
                 '''
             self.c.execute(query, (day_start, day_end, inverter_serial))
@@ -173,7 +175,7 @@ class Database():
             data['total'] = 0
 
         query = '''
-            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM ( SELECT TimeStamp FROM DayData WHERE Serial=? );
             '''
 
@@ -197,8 +199,8 @@ class Database():
         month_total = 0
 
         query = '''
-            SELECT TimeStamp, SUM(DayYield) AS Power 
-            FROM MonthData 
+            SELECT TimeStamp, SUM(DayYield) AS Power
+            FROM MonthData
             WHERE TimeStamp BETWEEN ? AND ?
             GROUP BY TimeStamp;
             '''
@@ -211,7 +213,7 @@ class Database():
         data['total'] = month_total
 
         query = '''
-            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );
             '''
 
@@ -233,8 +235,8 @@ class Database():
         month_total = 0
 
         query = '''
-            SELECT TimeStamp, DayYield AS Power 
-            FROM MonthData 
+            SELECT TimeStamp, DayYield AS Power
+            FROM MonthData
             WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
             '''
 
@@ -246,8 +248,8 @@ class Database():
         data['total'] = month_total
 
         query = '''
-            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
-            FROM MonthData 
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
+            FROM MonthData
             WHERE Serial=?;
             '''
 
@@ -271,8 +273,8 @@ class Database():
         month_ends = self.get_epoch_month_ends_for_year(date)
 
         query = '''
-                SELECT SUM(DayYield) AS Power 
-                FROM MonthData 
+                SELECT SUM(DayYield) AS Power
+                FROM MonthData
                 WHERE TimeStamp BETWEEN ? AND ?;
                 '''
 
@@ -301,7 +303,7 @@ class Database():
         data['total'] = year_total
 
         query = '''
-            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );
             '''
 
@@ -325,8 +327,8 @@ class Database():
         month_ends = self.get_epoch_month_ends_for_year(date)
 
         query = '''
-                SELECT SUM(DayYield) AS Power 
-                FROM MonthData 
+                SELECT SUM(DayYield) AS Power
+                FROM MonthData
                 WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
                 '''
 
@@ -354,7 +356,7 @@ class Database():
         data['total'] = year_total
 
         query = '''
-            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max 
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM ( SELECT TimeStamp FROM MonthData WHERE Serial=? GROUP BY TimeStamp );
             '''
 
@@ -365,6 +367,40 @@ class Database():
         else: data['hasPrevious'] = False
         if last_data: data['hasNext'] = (last_data > year_end)
         else: data['hasNext'] = False
+
+        return data
+
+    def get_requested_tot(self):
+        data = dict()
+
+        tot_start, tot_end = self.get_epoch_tot()
+        data['interval'] = {'from': self.convert_local_ts_to_utc(tot_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(tot_end, self.local_timezone)}
+
+        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d %H:%M:%S')
+        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d %H:%M:%S')
+
+        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0])):
+            gen_date = i + "-01-01 00:00:00"
+            data['data'].append({'time': gen_date, 'power': get_requested_year(gen_date)['total']})
+
+        data['data'] = list()
+
+        return data
+
+    def get_requested_tot_for_inverter(self, inverter_serial):
+        data = dict()
+
+        tot_start, tot_end = self.get_epoch_tot()
+        data['interval'] = {'from': self.convert_local_ts_to_utc(tot_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(tot_end, self.local_timezone)}
+
+        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d %H:%M:%S')
+        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d %H:%M:%S')
+
+        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0])):
+            gen_date = i + "-01-01 00:00:00"
+            data['data'].append({'time': gen_date, 'power': get_requested_year(inverter_serial, gen_date)['total']})
+
+        data['data'] = list()
 
         return data
 
@@ -418,6 +454,16 @@ class Database():
         s = date.split('-')
         epoch_start = int(datetime(int(s[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
         epoch_end = int(datetime(int(s[0]), 12, 31, 23, 59, 59, tzinfo=pytz.utc).timestamp())
+        return epoch_start, epoch_end
+
+    def get_epoch_tot(self):
+        query = '''
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
+            FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );
+            '''
+
+        self.c.execute(query)
+        epoch_start, epoch_end = self.c.fetchone()
         return epoch_start, epoch_end
 
     def get_epoch_month_ends_for_year(self, date):
