@@ -214,6 +214,11 @@ class Database():
             data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
 
+        tot_start, tot_end = self.get_epoch_tot()
+        if date.split('-')[0] + '-' + date.split('-')[1] == datetime.utcfromtimestamp(tot_end).strftime('%Y-%m'):
+            data['data'].append({'time': self.convert_local_ts_to_utc(tot_end, self.local_timezone), 'power': self.get_today()['dayTotal']})
+            month_total += self.get_today()['dayTotal']
+
         data['total'] = month_total
 
         query = '''
@@ -248,6 +253,11 @@ class Database():
         for row in self.c.execute(query, (month_start, month_end, inverter_serial)):
             data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
+
+        tot_start, tot_end = self.get_epoch_tot()
+        if date.split('-')[0] + '-' + date.split('-')[1] == datetime.utcfromtimestamp(tot_end).strftime('%Y-%m'):
+            data['data'].append({'time': self.convert_local_ts_to_utc(tot_end, self.local_timezone), 'power': self.get_today()['inverters'][inverter_serial]['dayTotal']})
+            month_total += self.get_today()['inverters'][inverter_serial]['dayTotal']
 
         data['total'] = month_total
 
