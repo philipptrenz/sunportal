@@ -57,11 +57,11 @@ function initializeCanvas() {
             <div class='chart col-12' id='chart-day-col'>
                 <div class="row">
                     <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
-                    <div class="d-none d-sm-block col-sm-4"><h5 class="inverter-name">`+ ((langCode == 'de') ? 'tag' : 'day' ) +`</h5></div>
+                    <div class="d-none d-sm-block col-sm-4"><h5 class="inverter-name">`+ ((langCode == 'de') ? 'Tag' : 'Day' ) +`</h5></div>
                     <div class="col-6 col-sm-4">
                         <h5 class="inverter-yield">
                             <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
-                            <span class="sr-only">loading ...</span>
+                            <span class="sr-only">Loading ...</span>
                         </h5>
                     </div>
 
@@ -83,7 +83,7 @@ function initializeCanvas() {
             <div class='chart col-12' id='chart-month-col'>
                 <div class="row">
                     <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
-                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'monat' : 'month' ) +`</h5></div>
+                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'Monat' : 'Month' ) +`</h5></div>
                     <div class="col-6 col-sm-4">
                         <h5 class="inverter-yield">
                             <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
@@ -111,7 +111,7 @@ function initializeCanvas() {
             <div class='chart col-12' id='chart-year-col'>
                 <div class="row">
                     <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
-                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'jahr' : 'year' ) +`</h5></div>
+                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'Jahr' : 'Year' ) +`</h5></div>
                     <div class="col-6 col-sm-4">
                         <h5 class="inverter-yield">
                             <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
@@ -135,10 +135,10 @@ function initializeCanvas() {
     if ( !$( "#chart-tot" ).length ) {
 
          var htmlTotChart = `
-            <div class='chart col-12' id='chart-year-col'>
+            <div class='chart col-12' id='chart-tot-col'>
                 <div class="row">
                     <div class="col-6 col-sm-4"><h5 class="chart-date"></h5></div>
-                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'total' : 'total' ) +`</h5></div>
+                    <div class="d-none d-sm-block col-sm-4" ><h5 class="inverter-name">`+ ((langCode == 'de') ? 'Total' : 'Total' ) +`</h5></div>
                     <div class="col-6 col-sm-4">
                         <h5 class="inverter-yield">
                             <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
@@ -215,12 +215,18 @@ function initializeCharts(serial) {
 	        },
 			tooltips: {
 				callbacks: {
-					title: function(t, d) {
+					title: function(e, legendItem) {
+						var dateArray = e[0].xLabel.split(" ");
+						var day = dateArray[1].split(",")[0];
+						var clockArray = dateArray[3].split(":");
+						if (clockArray[0] == "12" && dateArray[4] == "am") {
+							clockArray[0] = 0;
+						}
+						if (clockArray[0] != "12" && dateArray[4] == "pm") {
+							clockArray[0] = parseInt(clockArray[0]) + 12;
+						}
 						if (langCode == 'de')
-							return moment(t[0].xLabel).format('HH:mm [Uhr]');
-						else
-							return moment(t[0].xLabel).format('hh:mm A');
-
+							return day + ". " + dateArray[0] + " " + dateArray[2] + ", " + clockArray[0] + ":" + clockArray[1] + " Uhr";
 					}
 				}
 			}
@@ -275,13 +281,23 @@ function initializeCharts(serial) {
 	        },
 			tooltips: {
 				callbacks: {
-					title: function(t, d) {
+					title: function(e, legendItem) {
+						var index = e[0].index;
+						var thisDay = legendItem.datasets[0].data[index].x._i;
 						if (langCode == 'de')
-							return moment(t[0].xLabel).format('DD.MM.YYYY');
+							return moment(thisDay).format('DD.MM.YYYY');
 						else
-							return moment(t[0].xLabel).format('YYYY/MM/DD');
+							return moment(thisDay).format('YYYY/MM/DD');
 					}
 				}
+			},
+			onClick: function(e, legendItem) {
+				var index = legendItem[0]._index;
+				var newDay = legendItem[0]._chart.data.datasets[0].data[index].x._i;
+				newDay = moment(newDay).format('YYYY-MM-DD');
+				currentDay = newDay;
+
+				loadData();
 			}
 	    }
 	});
@@ -334,13 +350,22 @@ function initializeCharts(serial) {
 	        },
 			tooltips: {
 				callbacks: {
-					title: function(t, d) {
+					title: function(e, legendItem) {
+						var index = e[0].index;
+						var month = legendItem.datasets[0].data[index].x._i;
 						if (langCode == 'de')
-							return moment(t[0].xLabel).format('MMMM');
+							return moment(month).format('MMMM YYYY');
 						else
-							return moment(t[0].xLabel).format('MMMM');
+							return moment(month).format('YYYY MMMM');
 					}
 				}
+			},
+			onClick: function(e, legendItem) {
+				var index = legendItem[0]._index;
+				var month = legendItem[0]._chart.data.datasets[0].data[index].x._i;
+				currentDay = checkDateValid(moment(month).format('YYYY-MM') + "-" + currentDay.split("-")[2]);
+
+				loadData();
 			}
 	    }
 	});
@@ -393,13 +418,18 @@ function initializeCharts(serial) {
 	        },
 			tooltips: {
 				callbacks: {
-					title: function(t, d) {
-						if (langCode == 'de')
-							return moment(t[0].xLabel).format('YYYY');
-						else
-							return moment(t[0].xLabel).format('YYYY');
+					title: function(e, legendItem) {
+						var index = e[0].index;
+						var year = legendItem.datasets[0].data[index].x._i;
+						return moment(year).format('YYYY');
 					}
 				}
+			},
+			onClick: function(e, legendItem) {
+				var index = legendItem[0]._index;
+				var year = legendItem[0]._chart.data.datasets[0].data[index].x._i;
+				currentDay = checkDateValid(moment(year).format('YYYY') + "-" + currentDay.split("-")[1] + "-" + currentDay.split("-")[2]);
+				loadData();
 			}
 	    }
 	});
@@ -524,8 +554,8 @@ function loadData(day) {
 
 
 	            // update year chart
-	            $("#chart-year-col .chart-date").text( 'total' );
-	            $("#chart-year-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
+	            $("#chart-tot-col .chart-date").text( 'total' );
+	            $("#chart-tot-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
 
 	            // update scale
 	            all.tot.interval.from = moment.unix(all.tot.interval.from);
@@ -658,10 +688,10 @@ function loadData(day) {
                     inv_data.year.data.forEach(function(obj) {
                         time = moment.unix(obj.time).startOf('month');
 
-                        if (!moment(time).isSame(moment(), 'month')) {
+                        //if (!moment(time).isSame(moment(), 'month')) {
                             obj.x = time;
                             obj.y = obj.power / 1000;
-                        }
+                        //}
                         delete obj.time;
                         delete obj.power;
                     })
@@ -683,10 +713,10 @@ function loadData(day) {
                     inv_data.tot.data.forEach(function(obj) {
                         time = moment.unix(obj.time).startOf('year');
 
-                        if (!moment(time).isSame(moment(), 'year')) {
+                        //if (!moment(time).isSame(moment(), 'year')) {
                             obj.x = time;
                             obj.y = obj.power / 1000;
-                        }
+                        //}
                         delete obj.time;
                         delete obj.power;
                     })
@@ -879,6 +909,17 @@ function getColorShades(num, color) {
         shades.push(shadeBlendConvert(percentage, color));
     }
     return shades;
+}
+
+function checkDateValid(date){
+	var d = new Date(date);
+	var day = date.split("-")[2];
+	while (isNaN(d)) {
+		day--;
+		date = date.split("-")[0] + "-" + date.split("-")[1] + "-" + day;
+		d = new Date(date);
+	}
+	return date;
 }
 
 const shadeBlendConvert = function (p, from, to) {

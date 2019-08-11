@@ -17,6 +17,12 @@ class Database():
         self.local_timezone = self.get_local_timezone()
 
     def get(self, date):
+        tot_start, tot_end = self.get_epoch_tot()
+        int_date = int(datetime(int(date.split('-')[0]), int(date.split('-')[1]), int(date.split('-')[2]), 00, 00, 00, tzinfo=pytz.utc).timestamp())
+        if int_date < tot_start:
+            date = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d')
+        if int_date > tot_end:
+            date = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d')
         data = dict()
         data['today'] = self.get_today()
         data['requested'] = self.get_requested(date)
@@ -117,7 +123,7 @@ class Database():
 
         row = self.c.fetchone()
         if row and row[0]: data['total'] = row[0]
-        else: data['total'] = 0
+        else: data['total'] = self.get_today()['dayTotal']
 
 
         query = '''
@@ -169,10 +175,8 @@ class Database():
             self.c.execute(query, (day_start, day_end, inverter_serial))
 
         res = self.c.fetchone()
-        if res and res[0]:
-            data['total'] = res[0]
-        else:
-            data['total'] = 0
+        if res and res[0]: data['total'] = res[0]
+        else: data['total'] = self.get_today()['inverters'][inverter_serial]['dayTotal']
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
@@ -288,7 +292,8 @@ class Database():
 
             self.c.execute(query, (current_month_start_local, current_month_end_local))
 
-            month_total = self.c.fetchone()[0]
+            gen_date = datetime(int(date.split('-')[0]), i, 1)
+            month_total = self.get_requested_month(str(gen_date).split(' ')[0])['total']
             if month_total is None:
                 month_total = 0
 
@@ -342,7 +347,8 @@ class Database():
 
             self.c.execute(query, (current_month_start_local, current_month_end_local, inverter_serial))
 
-            month_total = self.c.fetchone()[0]
+            gen_date = datetime(int(date.split('-')[0]), i, 1)
+            month_total = self.get_requested_month_for_inverter(inverter_serial, str(gen_date).split(' ')[0])['total']
             if month_total is None:
                 month_total = 0
 
@@ -376,14 +382,15 @@ class Database():
         tot_start, tot_end = self.get_epoch_tot()
         data['interval'] = {'from': self.convert_local_ts_to_utc(tot_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(tot_end, self.local_timezone)}
 
-        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d %H:%M:%S')
-        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d %H:%M:%S')
-
-        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0])):
-            gen_date = i + "-01-01 00:00:00"
-            data['data'].append({'time': gen_date, 'power': get_requested_year(gen_date)['total']})
+        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d')
+        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d')
 
         data['data'] = list()
+
+        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0]) + 1):
+            gen_date = str(i) + "-01-01"
+            gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
+            data['data'].append({'time': gen_ts, 'power': self.get_requested_year(gen_date)['total']})
 
         return data
 
@@ -393,14 +400,15 @@ class Database():
         tot_start, tot_end = self.get_epoch_tot()
         data['interval'] = {'from': self.convert_local_ts_to_utc(tot_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(tot_end, self.local_timezone)}
 
-        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d %H:%M:%S')
-        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d %H:%M:%S')
-
-        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0])):
-            gen_date = i + "-01-01 00:00:00"
-            data['data'].append({'time': gen_date, 'power': get_requested_year(inverter_serial, gen_date)['total']})
+        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d')
+        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d')
 
         data['data'] = list()
+
+        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0]) + 1):
+            gen_date = str(i) + "-01-01"
+            gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
+            data['data'].append({'time': gen_ts, 'power': self.get_requested_year_for_inverter(inverter_serial, gen_date)['total']})
 
         return data
 
@@ -464,6 +472,17 @@ class Database():
 
         self.c.execute(query)
         epoch_start, epoch_end = self.c.fetchone()
+
+        query = '''
+            SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
+            FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp );
+            '''
+
+        self.c.execute(query)
+        day_start, day_end = self.c.fetchone()
+        if day_end > epoch_end:
+            epoch_end = day_end
+
         return epoch_start, epoch_end
 
     def get_epoch_month_ends_for_year(self, date):
