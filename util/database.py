@@ -7,6 +7,10 @@ from datetime import datetime, timedelta
 
 
 class Database():
+    hasRun = False
+    data = 0
+    inverters = 0
+    year_data = dict()
 
     def __init__(self, config):
         self.config = config
@@ -15,6 +19,8 @@ class Database():
         self.c = self.db.cursor()
 
         self.local_timezone = self.get_local_timezone()
+        global hasRun
+        hasRun = False
 
     def get(self, date):
         tot_start, tot_end = self.get_epoch_tot()
@@ -64,26 +70,40 @@ class Database():
         return data
 
     def get_requested(self, date):
+        global hasRun
+        global data
+        global inverters
+        global year_data
 
-        data = dict()
+        if hasRun is False:
+            data = dict()
         data['date'] = date
 
-        data['all'] = dict()
+        if hasRun is False:
+            data['all'] = dict()
         data['all']['day'] = self.get_requested_day(date)
         data['all']['month'] = self.get_requested_month(date)
-        data['all']['year'] = self.get_requested_year(date)
-        data['all']['tot'] = self.get_requested_tot()
+        if hasRun is False:
+            data['all']['year'] = self.get_requested_year(date)
+            data['all']['tot'] = self.get_requested_tot()
 
-        data['inverters'] = dict()
+            data['inverters'] = dict()
 
-        inverters = self.get_inverters()
+            inverters = self.get_inverters()
+        else:
+            data['all']['year'] = year_data[date.split('-')[0]]
         for inv in inverters:
-            data['inverters'][inv['serial']] = { 'day': [], 'month': [] }
+            if hasRun is False:
+                data['inverters'][inv['serial']] = { 'day': [], 'month': [], 'year': [], 'tot': [] }
 
             data['inverters'][inv['serial']]['day'] = self.get_requested_day_for_inverter(inv['serial'], date)
             data['inverters'][inv['serial']]['month'] = self.get_requested_month_for_inverter(inv['serial'], date)
-            data['inverters'][inv['serial']]['year'] = self.get_requested_year_for_inverter(inv['serial'], date)
-            data['inverters'][inv['serial']]['tot'] = self.get_requested_tot_for_inverter(inv['serial'])
+            if hasRun is False:
+                data['inverters'][inv['serial']]['year'] = self.get_requested_year_for_inverter(inv['serial'], date)
+                data['inverters'][inv['serial']]['tot'] = self.get_requested_tot_for_inverter(inv['serial'])
+            else:
+                data['inverters'][inv['serial']]['year'] = year_data[inv['serial']][date.split('-')[0]]
+        hasRun = True
 
         return data
 
@@ -387,6 +407,10 @@ class Database():
         return data
 
     def get_requested_tot(self):
+        global year_data
+        if hasRun is False:
+            year_data = dict()
+
         data = dict()
 
         tot_start, tot_end = self.get_epoch_tot()
@@ -400,25 +424,33 @@ class Database():
         for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0]) + 1):
             gen_date = str(i) + "-01-01"
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
-            data['data'].append({'time': gen_ts, 'power': self.get_requested_year(gen_date)['total']})
+            year = self.get_requested_year(gen_date)
+            data['data'].append({'time': gen_ts, 'power': year['total']})
+            year_data[str(i)] = year
 
         return data
 
     def get_requested_tot_for_inverter(self, inverter_serial):
+        global year_data
+        if hasRun is False:
+            year_data[inverter_serial] = dict()
+
         data = dict()
 
         tot_start, tot_end = self.get_epoch_tot()
         data['interval'] = {'from': self.convert_local_ts_to_utc(tot_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(tot_end, self.local_timezone)}
 
-        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d')
-        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d')
+        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y')
+        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y')
 
         data['data'] = list()
 
-        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0]) + 1):
+        for i in range(int(string_start), int(string_end) + 1):
             gen_date = str(i) + "-01-01"
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
-            data['data'].append({'time': gen_ts, 'power': self.get_requested_year_for_inverter(inverter_serial, gen_date)['total']})
+            year = self.get_requested_year_for_inverter(inverter_serial, gen_date)
+            data['data'].append({'time': gen_ts, 'power': year['total']})
+            year_data[inverter_serial][str(i)] = year
 
         return data
 
@@ -475,6 +507,8 @@ class Database():
         return epoch_start, epoch_end
 
     def get_epoch_tot(self):
+        global hasRun
+
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );

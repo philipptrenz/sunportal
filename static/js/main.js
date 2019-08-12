@@ -554,7 +554,7 @@ function loadData(day) {
 
 
 	            // update year chart
-	            $("#chart-tot-col .chart-date").text( 'total' );
+	            $("#chart-tot-col .chart-date").text( 'Total' );
 	            $("#chart-tot-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
 
 	            // update scale
