@@ -553,7 +553,7 @@ function loadData(day) {
 	            ];
 
 
-	            // update year chart
+	            // update tot chart
 	            $("#chart-tot-col .chart-date").text( 'Total' );
 	            $("#chart-tot-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
 
@@ -882,9 +882,8 @@ function getDayStringForPrint() {
 
 function getMonthStringForPrint() {
 	var date = moment(currentDay).format('YYYY-MM-DD');
-	//console.log('debug', moment(date).locale(langCode));
 	if (currentDay) {
-		return moment(date).locale(langCode).format('MMMM YYYY').toLowerCase();
+		return moment(date).locale(langCode).format('MMMM YYYY');
 	} else {
 		return '';
 	}
@@ -893,9 +892,8 @@ function getMonthStringForPrint() {
 
 function getYearStringForPrint() {
 	var date = moment(currentDay).format('YYYY-MM-DD');
-	//console.log('debug', moment(date).locale(langCode));
 	if (currentDay) {
-		return moment(date).locale(langCode).format('YYYY').toLowerCase();
+		return moment(date).locale(langCode).format('YYYY');
 	} else {
 		return '';
 	}
