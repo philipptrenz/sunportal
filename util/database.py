@@ -405,12 +405,12 @@ class Database():
         tot_start, tot_end = self.get_epoch_tot()
         data['interval'] = {'from': self.convert_local_ts_to_utc(tot_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(tot_end, self.local_timezone)}
 
-        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y-%m-%d')
-        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d')
+        string_start = datetime.utcfromtimestamp(tot_start).strftime('%Y')
+        string_end = datetime.utcfromtimestamp(tot_end).strftime('%Y')
 
         data['data'] = list()
 
-        for i in range(int(string_start.split('-')[0]), int(string_end.split('-')[0]) + 1):
+        for i in range(int(string_start) - 1, int(string_end) + 1):
             gen_date = str(i) + "-01-01"
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
             year = self.get_requested_year(gen_date)
@@ -429,7 +429,7 @@ class Database():
 
         data['data'] = list()
 
-        for i in range(int(string_start), int(string_end) + 1):
+        for i in range(int(string_start) - 1, int(string_end) + 1):
             gen_date = str(i) + "-01-01"
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
             year = self.get_requested_year_for_inverter(inverter_serial, gen_date)
