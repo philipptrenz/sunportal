@@ -22,7 +22,7 @@ class Database():
         global hasRun
         hasRun = False
 
-    def get(self, date):
+    def get(self, date, requested_data):
         tot_start, tot_end = self.get_epoch_tot()
         int_date = int(datetime(int(date.split('-')[0]), int(date.split('-')[1]), int(date.split('-')[2]), 00, 00, 00, tzinfo=pytz.utc).timestamp())
         if int_date < tot_start:
@@ -31,7 +31,7 @@ class Database():
             date = datetime.utcfromtimestamp(tot_end).strftime('%Y-%m-%d')
         data = dict()
         data['today'] = self.get_today()
-        data['requested'] = self.get_requested(date)
+        data['requested'] = self.get_requested(date, requested_data)
         return data
 
     def get_today(self):
@@ -69,41 +69,34 @@ class Database():
 
         return data
 
-    def get_requested(self, date):
-        global hasRun
-        global data
-        global inverters
-        global year_data
-
-        if hasRun is False:
-            data = dict()
+    def get_requested(self, date, requested_data):
+        data = dict()
         data['date'] = date
 
-        if hasRun is False:
-            data['all'] = dict()
-        data['all']['day'] = self.get_requested_day(date)
-        data['all']['month'] = self.get_requested_month(date)
-        if hasRun is False:
+        data['all'] = dict()
+        if requested_data['day'] is True:
+            data['all']['day'] = self.get_requested_day(date)
+        if requested_data['month'] is True:
+            data['all']['month'] = self.get_requested_month(date)
+        if requested_data['year'] is True:
             data['all']['year'] = self.get_requested_year(date)
+        if requested_data['tot'] is True:
             data['all']['tot'] = self.get_requested_tot()
 
-            data['inverters'] = dict()
+        data['inverters'] = dict()
 
-            inverters = self.get_inverters()
-        else:
-            data['all']['year'] = year_data[date.split('-')[0]]
+        inverters = self.get_inverters()
         for inv in inverters:
-            if hasRun is False:
-                data['inverters'][inv['serial']] = { 'day': [], 'month': [], 'year': [], 'tot': [] }
+            data['inverters'][inv['serial']] = { 'day': [], 'month': [], 'year': [], 'tot': [] }
 
-            data['inverters'][inv['serial']]['day'] = self.get_requested_day_for_inverter(inv['serial'], date)
-            data['inverters'][inv['serial']]['month'] = self.get_requested_month_for_inverter(inv['serial'], date)
-            if hasRun is False:
+            if requested_data['day'] is True:
+                data['inverters'][inv['serial']]['day'] = self.get_requested_day_for_inverter(inv['serial'], date)
+            if requested_data['month'] is True:
+                data['inverters'][inv['serial']]['month'] = self.get_requested_month_for_inverter(inv['serial'], date)
+            if requested_data['year'] is True:
                 data['inverters'][inv['serial']]['year'] = self.get_requested_year_for_inverter(inv['serial'], date)
+            if requested_data['tot'] is True:
                 data['inverters'][inv['serial']]['tot'] = self.get_requested_tot_for_inverter(inv['serial'])
-            else:
-                data['inverters'][inv['serial']]['year'] = year_data[inv['serial']][date.split('-')[0]]
-        hasRun = True
 
         return data
 
@@ -407,10 +400,6 @@ class Database():
         return data
 
     def get_requested_tot(self):
-        global year_data
-        if hasRun is False:
-            year_data = dict()
-
         data = dict()
 
         tot_start, tot_end = self.get_epoch_tot()
@@ -426,15 +415,10 @@ class Database():
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
             year = self.get_requested_year(gen_date)
             data['data'].append({'time': gen_ts, 'power': year['total']})
-            year_data[str(i)] = year
 
         return data
 
     def get_requested_tot_for_inverter(self, inverter_serial):
-        global year_data
-        if hasRun is False:
-            year_data[inverter_serial] = dict()
-
         data = dict()
 
         tot_start, tot_end = self.get_epoch_tot()
@@ -450,7 +434,6 @@ class Database():
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
             year = self.get_requested_year_for_inverter(inverter_serial, gen_date)
             data['data'].append({'time': gen_ts, 'power': year['total']})
-            year_data[inverter_serial][str(i)] = year
 
         return data
 
@@ -507,8 +490,6 @@ class Database():
         return epoch_start, epoch_end
 
     def get_epoch_tot(self):
-        global hasRun
-
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );

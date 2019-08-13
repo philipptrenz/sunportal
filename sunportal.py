@@ -25,9 +25,18 @@ schema = {
         'date': {
             'type': 'string',
             "pattern": r'^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$'
+        },
+        'requested_data': {
+            'type': 'object',
+            "properties" : {
+                "day" : {"type" : "boolean"},
+                "month" : {"type" : "boolean"},
+                "year" : {"type" : "boolean"},
+                "tot" : {"type" : "boolean"}
+            }
         }
     },
-    'required': ['date']
+    'required': ['date', 'requested_data']
 }
 
 
@@ -42,8 +51,10 @@ def update():
     if request.headers['Content-Type'] == 'application/json':
         content = request.json
         if 'date' not in content: flask.abort(400)
+        if 'requested_data' not in content: flask.abort(400)
         date = content['date']
-        return jsonify(db.get(date))
+        requested_data = content['requested_data']
+        return jsonify(db.get(date, requested_data))
     flask.abort(400)
 
 if __name__ == '__main__':
