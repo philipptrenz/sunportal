@@ -571,8 +571,8 @@ function loadData(load_mode = 1) {
 		            $("#chart-tot-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
 
 		            // update scale
-		            all.tot.interval.from = moment.unix(all.tot.interval.from);
-		            all.tot.interval.to = moment.unix(all.tot.interval.to);
+		            all.tot.interval.from = moment.unix(all.tot.interval.from).subtract('years', 1);
+		            all.tot.interval.to = moment.unix(all.tot.interval.to).add('years', 1);
 		            totChart.data.labels = [
 		                all.tot.interval.from,
 		                all.tot.interval.to

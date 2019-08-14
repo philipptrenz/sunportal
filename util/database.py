@@ -7,10 +7,6 @@ from datetime import datetime, timedelta
 
 
 class Database():
-    hasRun = False
-    data = 0
-    inverters = 0
-    year_data = dict()
 
     def __init__(self, config):
         self.config = config
@@ -19,8 +15,6 @@ class Database():
         self.c = self.db.cursor()
 
         self.local_timezone = self.get_local_timezone()
-        global hasRun
-        hasRun = False
 
     def get(self, date, requested_data):
         tot_start, tot_end = self.get_epoch_tot()
@@ -410,7 +404,7 @@ class Database():
 
         data['data'] = list()
 
-        for i in range(int(string_start) - 1, int(string_end) + 1):
+        for i in range(int(string_start), int(string_end) + 1):
             gen_date = str(i) + "-01-01"
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
             year = self.get_requested_year(gen_date)
@@ -429,7 +423,7 @@ class Database():
 
         data['data'] = list()
 
-        for i in range(int(string_start) - 1, int(string_end) + 1):
+        for i in range(int(string_start), int(string_end) + 1):
             gen_date = str(i) + "-01-01"
             gen_ts = int(datetime(int(gen_date.split('-')[0]), 1, 1, 00, 00, 00, tzinfo=pytz.utc).timestamp())
             year = self.get_requested_year_for_inverter(inverter_serial, gen_date)
