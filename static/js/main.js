@@ -28,7 +28,7 @@ $(document).ready(function () {
 	$('#content').fadeIn(1000, function() {
 
 		/* ----- load data from database via ajax ------ */
-		loadData();
+		loadData(3);
 
 	});
 
@@ -297,7 +297,7 @@ function initializeCharts(serial) {
 				newDay = moment(newDay).format('YYYY-MM-DD');
 				currentDay = newDay;
 
-				loadData();
+				loadData(0);
 			}
 	    }
 	});
@@ -365,7 +365,7 @@ function initializeCharts(serial) {
 				var month = legendItem[0]._chart.data.datasets[0].data[index].x._i;
 				currentDay = checkDateValid(moment(month).format('YYYY-MM') + "-" + currentDay.split("-")[2]);
 
-				loadData();
+				loadData(1);
 			}
 	    }
 	});
@@ -429,7 +429,7 @@ function initializeCharts(serial) {
 				var index = legendItem[0]._index;
 				var year = legendItem[0]._chart.data.datasets[0].data[index].x._i;
 				currentDay = checkDateValid(moment(year).format('YYYY') + "-" + currentDay.split("-")[1] + "-" + currentDay.split("-")[2]);
-				loadData();
+				loadData(2);
 			}
 	    }
 	});
@@ -438,7 +438,7 @@ function initializeCharts(serial) {
 }
 
 var requesting = false;
-function loadData(day) {
+function loadData(load_mode = 1) {
 
 	// only one request at a time
 	if (requesting) return;
@@ -447,15 +447,23 @@ function loadData(day) {
 	clearTimeout(reloadTimer);
 
 	var request_data = {
-		date: currentDay
+		date: currentDay,
+	    requested_data: {
+	        day: load_mode >= 0,
+	        month: load_mode >= 1,
+	        year: load_mode >= 2,
+	        tot: load_mode >= 3
+	    }
 	};
 
 //	$('.chart-date').each(function() {
 //		$(this).text('');
 //	});
+	var inv_count = 0;
 	$('.inverter-yield').each(function() {
-		if (! $(this).has('i.fa-circle-o-notch').length)
+		if (inv_count <= load_mode && ! $(this).has('i.fa-circle-o-notch').length)
 			$(this).html('<i class="fa fa-circle-o-notch fa-spin fa-fw"></i><span class="sr-only">Loading ...</span>');
+		inv_count++;
 	});
 
 	//console.log("Requesting data for "+currentDay+" ...");
@@ -472,7 +480,7 @@ function loadData(day) {
 		},
 		success: function(response) {
 
-	        console.log(response)
+	        //console.log(response)
 
 			// current information
 			$("#dayTotal").text( addPrefix(response.today.dayTotal) + "Wh" );
@@ -491,79 +499,85 @@ function loadData(day) {
 	        var all = response.requested.all;
 
 	        {
-	            // update day chart
-	            $("#chart-day-col .chart-date").text(getDayStringForPrint());
-	            $("#chart-day-col .inverter-yield").text( addPrefix(all.day.total) + "Wh");
+				if (load_mode >= 0) {
+		            // update day chart
+		            $("#chart-day-col .chart-date").text(getDayStringForPrint());
+		            $("#chart-day-col .inverter-yield").text( addPrefix(all.day.total) + "Wh");
 
-	            // show or hide navigation arrows on day chart
-	            $("#chart-day-col .navigation-right").each(function() {
-	                $(this).css("visibility", (all.day.hasNext ? "visible" : "hidden"));
-	            });
-	            $("#chart-day-col .navigation-left").each(function() {
-	                $(this).css("visibility", (all.day.hasPrevious ? "visible" : "hidden"));
-	            });
+		            // show or hide navigation arrows on day chart
+		            $("#chart-day-col .navigation-right").each(function() {
+		                $(this).css("visibility", (all.day.hasNext ? "visible" : "hidden"));
+		            });
+		            $("#chart-day-col .navigation-left").each(function() {
+		                $(this).css("visibility", (all.day.hasPrevious ? "visible" : "hidden"));
+		            });
 
-	            // update scale
-	            all.day.interval.from = moment.unix(all.day.interval.from);
-	            all.day.interval.to= moment.unix(all.day.interval.to);
-	            dayChart.data.labels = [
-	                all.day.interval.from,
-	                all.day.interval.to
-	            ];
+		            // update scale
+		            all.day.interval.from = moment.unix(all.day.interval.from);
+		            all.day.interval.to= moment.unix(all.day.interval.to);
+		            dayChart.data.labels = [
+		                all.day.interval.from,
+		                all.day.interval.to
+		            ];
+				}
 
-                // update month chart
-	            $("#chart-month-col .chart-date").text( getMonthStringForPrint() );
-	            $("#chart-month-col .inverter-yield").text( addPrefix(all.month.total) + "Wh");
+				if (load_mode >= 1) {
+	                // update month chart
+		            $("#chart-month-col .chart-date").text( getMonthStringForPrint() );
+		            $("#chart-month-col .inverter-yield").text( addPrefix(all.month.total) + "Wh");
 
-	            // show or hide navigation arrows on day chart
-	            $("#chart-month-col .navigation-right").each(function() {
-	                $(this).css("visibility", (all.month.hasNext ? "visible" : "hidden"));
-	            });
-	            $("#chart-month-col .navigation-left").each(function() {
-	                $(this).css("visibility", (all.month.hasPrevious ? "visible" : "hidden"));
-	            });
+		            // show or hide navigation arrows on day chart
+		            $("#chart-month-col .navigation-right").each(function() {
+		                $(this).css("visibility", (all.month.hasNext ? "visible" : "hidden"));
+		            });
+		            $("#chart-month-col .navigation-left").each(function() {
+		                $(this).css("visibility", (all.month.hasPrevious ? "visible" : "hidden"));
+		            });
 
-	            // update scale
-	            all.month.interval.from = moment.unix(all.month.interval.from);
-	            all.month.interval.to = moment.unix(all.month.interval.to);
-	            monthChart.data.labels = [
-	                all.month.interval.from,
-	                all.month.interval.to
-	            ];
+		            // update scale
+		            all.month.interval.from = moment.unix(all.month.interval.from);
+		            all.month.interval.to = moment.unix(all.month.interval.to);
+		            monthChart.data.labels = [
+		                all.month.interval.from,
+		                all.month.interval.to
+		            ];
+				}
 
+				if (load_mode >= 2) {
+		            // update year chart
+		            $("#chart-year-col .chart-date").text( getYearStringForPrint() );
+		            $("#chart-year-col .inverter-yield").text( addPrefix(all.year.total) + "Wh");
 
-	            // update year chart
-	            $("#chart-year-col .chart-date").text( getYearStringForPrint() );
-	            $("#chart-year-col .inverter-yield").text( addPrefix(all.year.total) + "Wh");
+		            // show or hide navigation arrows on day chart
+		            $("#chart-year-col .navigation-right").each(function() {
+		                $(this).css("visibility", (all.year.hasNext ? "visible" : "hidden"));
+		            });
+		            $("#chart-year-col .navigation-left").each(function() {
+		                $(this).css("visibility", (all.year.hasPrevious ? "visible" : "hidden"));
+		            });
 
-	            // show or hide navigation arrows on day chart
-	            $("#chart-year-col .navigation-right").each(function() {
-	                $(this).css("visibility", (all.year.hasNext ? "visible" : "hidden"));
-	            });
-	            $("#chart-year-col .navigation-left").each(function() {
-	                $(this).css("visibility", (all.year.hasPrevious ? "visible" : "hidden"));
-	            });
+		            // update scale
+		            all.year.interval.from = moment.unix(all.year.interval.from).subtract(30.4, 'days'); // data has first day of month as data point
+		            all.year.interval.to = moment.unix(all.year.interval.to);
+		            yearChart.data.labels = [
+		                all.year.interval.from,
+		                all.year.interval.to
+		            ];
+				}
 
-	            // update scale
-	            all.year.interval.from = moment.unix(all.year.interval.from).subtract(30.4, 'days'); // data has first day of month as data point
-	            all.year.interval.to = moment.unix(all.year.interval.to);
-	            yearChart.data.labels = [
-	                all.year.interval.from,
-	                all.year.interval.to
-	            ];
+				if (load_mode >= 3) {
+		            // update tot chart
+		            $("#chart-tot-col .chart-date").text( 'Total' );
+		            $("#chart-tot-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
 
-
-	            // update tot chart
-	            $("#chart-tot-col .chart-date").text( 'Total' );
-	            $("#chart-tot-col .inverter-yield").text( addPrefix(response.today.total) + "Wh");
-
-	            // update scale
-	            all.tot.interval.from = moment.unix(all.tot.interval.from);
-	            all.tot.interval.to = moment.unix(all.tot.interval.to);
-	            totChart.data.labels = [
-	                all.tot.interval.from,
-	                all.tot.interval.to
-	            ];
+		            // update scale
+		            all.tot.interval.from = moment.unix(all.tot.interval.from);
+		            all.tot.interval.to = moment.unix(all.tot.interval.to);
+		            totChart.data.labels = [
+		                all.tot.interval.from,
+		                all.tot.interval.to
+		            ];
+				}
 
 	        }
 
@@ -575,7 +589,7 @@ function loadData(day) {
 
                     // WORKAROUND FOR CHART.JS STACKED CHARTS BUG
                     // ISSUE: https://github.com/chartjs/Chart.js/issues/5484
-                    if (inv_data.day.data.length > 0) {
+                    if (load_mode >= 0 && inv_data.day.data.length > 0) {
 
                         // for day data with missing timestamps at the beginning
                         if (all.day.data[0].time < inv_data.day.data[0].time) {
@@ -599,7 +613,7 @@ function loadData(day) {
                         }
 
                     }
-                    if (inv_data.month.data.length > 0) {
+                    if (load_mode >= 1 && inv_data.month.data.length > 0) {
                         // for month data with missing timestamps at the beginning
                         if (all.month.data[0].time < inv_data.month.data[0].time) {
                             var tmp = [], i = 0;
@@ -613,7 +627,7 @@ function loadData(day) {
                         }
                     }
 
-                    if (inv_data.year.data.length > 0) {
+                    if (load_mode >= 2 && inv_data.year.data.length > 0) {
                         // for month data with missing timestamps at the beginning
                         if (all.year.data[0].time < inv_data.year.data[0].time) {
                             var tmp = [], i = 0;
@@ -627,7 +641,7 @@ function loadData(day) {
                         }
                     }
 
-                    if (inv_data.tot.data.length > 0) {
+                    if (load_mode >= 3 && inv_data.tot.data.length > 0) {
                         // for month data with missing timestamps at the beginning
                         if (all.tot.data[0].time < inv_data.tot.data[0].time) {
                             var tmp = [], i = 0;
@@ -643,95 +657,100 @@ function loadData(day) {
                     // WORKAROUND FOR CHART.JS BUG END
 
 
-                    // update day chart
-                    inv_data.day.data.forEach(function(obj) {
-                        obj.x = moment.unix(obj.time);
-                        obj.y = obj.power / 1000;
-                        delete obj.time;
-                        delete obj.power;
-                    })
-                    var is_label_not_defined = (dayChart.data.datasets[chart_num] && (dayChart.data.datasets[chart_num].label != response.today.inverters[k].name))
-                    if (is_label_not_defined || !dayChart.data.datasets[chart_num]) {
-                        dayChart.data.datasets[chart_num] = {
-                            label: response.today.inverters[k].name,
-                            data: inv_data.day.data,
-                            borderWidth: 1,
-                            pointRadius: 0
-                        }
-                    } else {
-                        dayChart.data.datasets[chart_num].data = inv_data.day.data;
-                    }
+					if (load_mode >= 0) {
+                    	// update day chart
+	                    inv_data.day.data.forEach(function(obj) {
+	                        obj.x = moment.unix(obj.time);
+	                        obj.y = obj.power / 1000;
+	                        delete obj.time;
+	                        delete obj.power;
+	                    })
+	                    var is_label_not_defined = (dayChart.data.datasets[chart_num] && (dayChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+	                    if (is_label_not_defined || !dayChart.data.datasets[chart_num]) {
+	                        dayChart.data.datasets[chart_num] = {
+	                            label: response.today.inverters[k].name,
+	                            data: inv_data.day.data,
+	                            borderWidth: 1,
+	                            pointRadius: 0
+	                        }
+	                    } else {
+	                        dayChart.data.datasets[chart_num].data = inv_data.day.data;
+	                    }
+					}
 
+					if (load_mode >= 1) {
+	                    // update month chart
+	                    inv_data.month.data.forEach(function(obj) {
+	                        obj.x = moment.unix(obj.time).startOf('day').add(12, 'h');
+	                        obj.y = obj.power / 1000;
+	                        delete obj.time;
+	                        delete obj.power;
+	                    })
 
-                    // update month chart
-                    inv_data.month.data.forEach(function(obj) {
-                        obj.x = moment.unix(obj.time).startOf('day').add(12, 'h');
-                        obj.y = obj.power / 1000;
-                        delete obj.time;
-                        delete obj.power;
-                    })
+	                    var is_label_not_defined = (monthChart.data.datasets[chart_num] && (monthChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+	                    if ( is_label_not_defined || !monthChart.data.datasets[chart_num]) {
+	                        monthChart.data.datasets[chart_num] = {
+	                            label: response.today.inverters[k].name,
+	                            data: inv_data.month.data,
+	                            borderWidth: 1,
+	                            pointRadius: 0
+	                        }
+	                    } else {
+	                        monthChart.data.datasets[chart_num].data = inv_data.month.data;
+	                    }
+					}
 
-                    var is_label_not_defined = (monthChart.data.datasets[chart_num] && (monthChart.data.datasets[chart_num].label != response.today.inverters[k].name))
-                    if ( is_label_not_defined || !monthChart.data.datasets[chart_num]) {
-                        monthChart.data.datasets[chart_num] = {
-                            label: response.today.inverters[k].name,
-                            data: inv_data.month.data,
-                            borderWidth: 1,
-                            pointRadius: 0
-                        }
-                    } else {
-                        monthChart.data.datasets[chart_num].data = inv_data.month.data;
-                    }
+					if (load_mode >= 2) {
+	                    // update year chart
+	                    inv_data.year.data.forEach(function(obj) {
+	                        time = moment.unix(obj.time).startOf('month');
 
+	                        //if (!moment(time).isSame(moment(), 'month')) {
+	                            obj.x = time;
+	                            obj.y = obj.power / 1000;
+	                        //}
+	                        delete obj.time;
+	                        delete obj.power;
+	                    })
 
-                    // update year chart
-                    inv_data.year.data.forEach(function(obj) {
-                        time = moment.unix(obj.time).startOf('month');
+	                    var is_label_not_defined = (yearChart.data.datasets[chart_num] && (yearChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+	                    if ( is_label_not_defined || !yearChart.data.datasets[chart_num]) {
+	                        yearChart.data.datasets[chart_num] = {
+	                            label: response.today.inverters[k].name,
+	                            data: inv_data.year.data,
+	                            borderWidth: 1,
+	                            pointRadius: 0
+	                        }
+	                    } else {
+	                        yearChart.data.datasets[chart_num].data = inv_data.year.data;
+	                    }
+					}
 
-                        //if (!moment(time).isSame(moment(), 'month')) {
-                            obj.x = time;
-                            obj.y = obj.power / 1000;
-                        //}
-                        delete obj.time;
-                        delete obj.power;
-                    })
+					if (load_mode >= 3) {
+	                    // update tot chart
+	                    inv_data.tot.data.forEach(function(obj) {
+	                        time = moment.unix(obj.time).startOf('year');
 
-                    var is_label_not_defined = (yearChart.data.datasets[chart_num] && (yearChart.data.datasets[chart_num].label != response.today.inverters[k].name))
-                    if ( is_label_not_defined || !yearChart.data.datasets[chart_num]) {
-                        yearChart.data.datasets[chart_num] = {
-                            label: response.today.inverters[k].name,
-                            data: inv_data.year.data,
-                            borderWidth: 1,
-                            pointRadius: 0
-                        }
-                    } else {
-                        yearChart.data.datasets[chart_num].data = inv_data.year.data;
-                    }
+	                        //if (!moment(time).isSame(moment(), 'year')) {
+	                            obj.x = time;
+	                            obj.y = obj.power / 1000;
+	                        //}
+	                        delete obj.time;
+	                        delete obj.power;
+	                    })
 
-
-                    // update tot chart
-                    inv_data.tot.data.forEach(function(obj) {
-                        time = moment.unix(obj.time).startOf('year');
-
-                        //if (!moment(time).isSame(moment(), 'year')) {
-                            obj.x = time;
-                            obj.y = obj.power / 1000;
-                        //}
-                        delete obj.time;
-                        delete obj.power;
-                    })
-
-                    var is_label_not_defined = (totChart.data.datasets[chart_num] && (totChart.data.datasets[chart_num].label != response.today.inverters[k].name))
-                    if ( is_label_not_defined || !totChart.data.datasets[chart_num]) {
-                        totChart.data.datasets[chart_num] = {
-                            label: response.today.inverters[k].name,
-                            data: inv_data.tot.data,
-                            borderWidth: 1,
-                            pointRadius: 0
-                        }
-                    } else {
-                        totChart.data.datasets[chart_num].data = inv_data.tot.data;
-                    }
+	                    var is_label_not_defined = (totChart.data.datasets[chart_num] && (totChart.data.datasets[chart_num].label != response.today.inverters[k].name))
+	                    if ( is_label_not_defined || !totChart.data.datasets[chart_num]) {
+	                        totChart.data.datasets[chart_num] = {
+	                            label: response.today.inverters[k].name,
+	                            data: inv_data.tot.data,
+	                            borderWidth: 1,
+	                            pointRadius: 0
+	                        }
+	                    } else {
+	                        totChart.data.datasets[chart_num].data = inv_data.tot.data;
+	                    }
+					}
 
 
                     chart_num++;
@@ -741,37 +760,45 @@ function loadData(day) {
             var backgroundColorShades   = getColorShades(dayChart.data.datasets.length, 'rgba(227,6,19,0.3)')
             var borderColorShades       = getColorShades(dayChart.data.datasets.length, 'rgba(227,6,19,1)')
 
-            dayChart.data.datasets.sort(sort_inverter_datasets_alphabetically);   // sort alphabetically
-            for (var i=0; i<dayChart.data.datasets.length; i++) {
-                obj = dayChart.data.datasets[i];
-                obj.backgroundColor = backgroundColorShades[i];
-                obj.borderColor = borderColorShades[i];
-            }
-            dayChart.update();
+			if (load_mode >= 0) {
+	            dayChart.data.datasets.sort(sort_inverter_datasets_alphabetically);   // sort alphabetically
+	            for (var i=0; i<dayChart.data.datasets.length; i++) {
+	                obj = dayChart.data.datasets[i];
+	                obj.backgroundColor = backgroundColorShades[i];
+	                obj.borderColor = borderColorShades[i];
+	            }
+	            dayChart.update();
+			}
 
-            monthChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
-            for (var i=0; i<monthChart.data.datasets.length; i++) {
-                obj = monthChart.data.datasets[i];
-                obj.backgroundColor = backgroundColorShades[i];
-                obj.borderColor = borderColorShades[i];
-            }
-            monthChart.update();
+			if (load_mode >= 1) {
+	            monthChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
+	            for (var i=0; i<monthChart.data.datasets.length; i++) {
+	                obj = monthChart.data.datasets[i];
+	                obj.backgroundColor = backgroundColorShades[i];
+	                obj.borderColor = borderColorShades[i];
+	            }
+	            monthChart.update();
+			}
 
-            yearChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
-            for (var i=0; i<yearChart.data.datasets.length; i++) {
-                obj = yearChart.data.datasets[i];
-                obj.backgroundColor = backgroundColorShades[i];
-                obj.borderColor = borderColorShades[i];
-            }
-            yearChart.update();
+			if (load_mode >= 2) {
+	            yearChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
+	            for (var i=0; i<yearChart.data.datasets.length; i++) {
+	                obj = yearChart.data.datasets[i];
+	                obj.backgroundColor = backgroundColorShades[i];
+	                obj.borderColor = borderColorShades[i];
+	            }
+	            yearChart.update();
+			}
 
-            totChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
-            for (var i=0; i<totChart.data.datasets.length; i++) {
-                obj = totChart.data.datasets[i];
-                obj.backgroundColor = backgroundColorShades[i];
-                obj.borderColor = borderColorShades[i];
-            }
-            totChart.update();
+			if (load_mode >= 3) {
+	            totChart.data.datasets.sort(sort_inverter_datasets_alphabetically); // sort alphabetically
+	            for (var i=0; i<totChart.data.datasets.length; i++) {
+	                obj = totChart.data.datasets[i];
+	                obj.backgroundColor = backgroundColorShades[i];
+	                obj.borderColor = borderColorShades[i];
+	            }
+	            totChart.update();
+			}
 
 			requesting = false;
 
@@ -818,42 +845,46 @@ function navigate(self) {
 
 function navigateOneDay(dayString, direction) {
 	var date = moment(dayString).format('YYYY-MM-DD');
+	var load_mode = 0;
 	if (direction == 'forwards') {
 		date = moment(date).add(1, 'days').format("YYYY-MM-DD");
 		currentDay = date;
-		loadData();
+		if (date.split("-")[2] == "01") load_mode = 1;
+		loadData(load_mode);
 	} else if (direction == 'backwards') {
+		if (date.split("-")[2] == "01") load_mode = 1;
 		date = moment(date).subtract(1, 'days').format("YYYY-MM-DD");
 		currentDay = date;
-		loadData();
+		loadData(load_mode);
 	}
 }
 
 function navigateOneMonth(dayString, direction) {
 	var date = moment(dayString).format('YYYY-MM-DD');
-
+	var load_mode = 1;
 	if (direction == 'forwards') {
 		date = moment(date).add(1, 'months').format("YYYY-MM-DD");
 		currentDay = date;
-		loadData();
+		if (date.split("-")[1] == "01") load_mode = 2;
+		loadData(1);
 	} else if (direction == 'backwards') {
+		if (date.split("-")[1] == "01") load_mode = 2;
 		date = moment(date).subtract(1, 'months').format("YYYY-MM-DD");
 		currentDay = date;
-		loadData();
+		loadData(1);
 	}
 }
 
 function navigateOneYear(dayString, direction) {
 	var date = moment(dayString).format('YYYY-MM-DD');
-
 	if (direction == 'forwards') {
 		date = moment(date).add(1, 'years').format("YYYY-MM-DD");
 		currentDay = date;
-		loadData();
+		loadData(2);
 	} else if (direction == 'backwards') {
 		date = moment(date).subtract(1, 'years').format("YYYY-MM-DD");
 		currentDay = date;
-		loadData();
+		loadData(2);
 	}
 }
 
