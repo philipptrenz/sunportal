@@ -14,12 +14,12 @@ from util.config import Config
 from util.database import Database
 from util.mail import Mail
 
-config = Config()
-db = Database(config=config)
-mail = Mail(config, db)
-app = Flask(__name__)
+CONFIG = Config()
+DB = Database(config=CONFIG)
+MAIL = Mail(CONFIG, DB)
+APP = Flask(__name__)
 
-schema = {
+SCHEMA = {
     'type': 'object',
     'properties': {
         'date': {
@@ -40,23 +40,29 @@ schema = {
 }
 
 
-@app.route('/')
+@APP.route('/')
 def home():
+    """Set html file"""
     return render_template('index.html')
 
 
-@app.route('/update', methods=['POST'])
-@expects_json(schema)
+@APP.route('/update', methods=['POST'])
+@expects_json(SCHEMA)
 def update():
+    """Do the request"""
+    val = jsonify()
     if request.headers['Content-Type'] == 'application/json':
         content = request.json
-        if 'date' not in content: flask.abort(400)
-        if 'requested_data' not in content: flask.abort(400)
+        if 'date' not in content:
+            flask.abort(400)
+        if 'requested_data' not in content:
+            flask.abort(400)
         date = content['date']
         requested_data = content['requested_data']
-        return jsonify(db.get(date, requested_data))
-    flask.abort(400)
+        val = jsonify(DB.get(date, requested_data))
+    return val
 
 if __name__ == '__main__':
-    if mail.is_enabled: mail.start()
-    app.run(host='0.0.0.0', port=80)
+    if MAIL.is_enabled:
+        MAIL.start()
+    APP.run(host='0.0.0.0', port=80)

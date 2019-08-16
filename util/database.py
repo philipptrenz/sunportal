@@ -5,7 +5,7 @@ import util.time as time
 
 
 class Database():
-    """The class"""
+    """Database class"""
 
     def __init__(self, config):
         self.config = config
@@ -109,9 +109,7 @@ class Database():
         data = dict()
 
         day_start, day_end = time.get_epoch_day(date)
-        from_ts = time.convert_local_ts_to_utc(day_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(day_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(day_start, day_end)
 
         query = '''
             SELECT TimeStamp, SUM(Power) AS Power
@@ -173,9 +171,7 @@ class Database():
         data = dict()
 
         day_start, day_end = time.get_epoch_day(date)
-        from_ts = time.convert_local_ts_to_utc(day_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(day_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(day_start, day_end)
 
         query = '''
             SELECT TimeStamp, Power
@@ -234,9 +230,7 @@ class Database():
         data = dict()
 
         month_start, month_end = time.get_epoch_month(date)
-        from_ts = time.convert_local_ts_to_utc(month_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(month_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(month_start, month_end)
         month_total = 0
 
         query = '''
@@ -285,9 +279,7 @@ class Database():
         data = dict()
 
         month_start, month_end = time.get_epoch_month(date)
-        from_ts = time.convert_local_ts_to_utc(month_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(month_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(month_start, month_end)
         month_total = 0
 
         query = '''
@@ -336,9 +328,7 @@ class Database():
         data = dict()
 
         year_start, year_end = time.get_epoch_year(date)
-        from_ts = time.convert_local_ts_to_utc(year_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(year_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(year_start, year_end)
 
         data['data'] = list()
         month_ends = time.get_epoch_month_ends_for_year(date)
@@ -398,9 +388,7 @@ class Database():
         data = dict()
 
         year_start, year_end = time.get_epoch_year(date)
-        from_ts = time.convert_local_ts_to_utc(year_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(year_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(year_start, year_end)
 
         data['data'] = list()
         month_ends = time.get_epoch_month_ends_for_year(date)
@@ -460,9 +448,7 @@ class Database():
         data = dict()
 
         tot_start, tot_end = self.get_epoch_tot()
-        from_ts = time.convert_local_ts_to_utc(tot_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(tot_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(tot_start, tot_end)
 
         string_start = time.get_datestring(tot_start, '%Y')
         string_end = time.get_datestring(tot_end, '%Y')
@@ -482,9 +468,7 @@ class Database():
         data = dict()
 
         tot_start, tot_end = self.get_epoch_tot()
-        from_ts = time.convert_local_ts_to_utc(tot_start, self.local_timezone)
-        to_ts = time.convert_local_ts_to_utc(tot_end, self.local_timezone)
-        data['interval'] = {'from': from_ts, 'to': to_ts}
+        data['interval'] = self.get_interval(tot_start, tot_end)
 
         string_start = time.get_datestring(tot_start, '%Y')
         string_end = time.get_datestring(tot_end, '%Y')
@@ -545,6 +529,12 @@ class Database():
             epoch_end = day_end
 
         return epoch_start, epoch_end
+
+    def get_interval(self, start, end):
+        """Get specific chart interval converting timestamp to utc"""
+        from_ts = time.convert_local_ts_to_utc(start, self.local_timezone)
+        to_ts = time.convert_local_ts_to_utc(end, self.local_timezone)
+        return {'from': from_ts, 'to': to_ts}
 
     def close(self):
         """Close database connection"""
