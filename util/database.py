@@ -2,7 +2,7 @@
 """
 """
 import pytz
-import sqlite3
+import mysql.connector
 from datetime import datetime, timedelta
 
 
@@ -15,8 +15,9 @@ class Database():
     def __init__(self, config):
         self.config = config
         self.co2_mult = self.config.get_co2_avoidance_factor()
-        self.db = sqlite3.connect(self.config.get_database_path(), check_same_thread=False)
-        self.c = self.db.cursor()
+        self.db = mysql.connector.connect(host=self.config.config["database"]["mysql"]["host"], user=self.config.config["database"]["mysql"]["username"], passwd=self.config.config["database"]["mysql"]["password"], database=self.config.config["database"]["mysql"]["database"])
+
+        self.c = self.db.cursor(buffered=True)
 
         self.local_timezone = self.get_local_timezone()
         global hasRun
@@ -110,12 +111,13 @@ class Database():
         query = '''
             SELECT TimeStamp, SUM(Power) AS Power
             FROM DayData
-            WHERE TimeStamp BETWEEN ? AND ?
+            WHERE TimeStamp BETWEEN %s AND %s
             GROUP BY TimeStamp;
         '''
 
         data['data'] = list()
-        for row in self.c.execute(query, (day_start, day_end)):
+        self.c.execute(query, (day_start, day_end))
+        for row in self.c.fetchall():
             data['data'].append({ 'time': row[0], 'power': row[1] })
 
 
@@ -129,7 +131,7 @@ class Database():
             query = '''
                 SELECT SUM(DayYield) AS Power
                 FROM MonthData
-                WHERE TimeStamp BETWEEN ? AND ?
+                WHERE TimeStamp BETWEEN %s AND %s
                 GROUP BY TimeStamp;
                 '''
             self.c.execute(query, (day_start, day_end))
@@ -141,7 +143,7 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
-            FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp );
+            FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp ) as data;
             '''
 
         self.c.execute(query)
@@ -165,25 +167,26 @@ class Database():
         query = '''
             SELECT TimeStamp, Power
             FROM DayData
-            WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
+            WHERE TimeStamp BETWEEN %s AND %s AND Serial=%s;
             '''
 
         data['data'] = list()
-        for row in self.c.execute(query, (day_start, day_end, inverter_serial)):
+        self.c.execute(query, (day_start, day_end, inverter_serial))
+        for row in self.c.fetchall():
             data['data'].append({'time': row[0], 'power': row[1]})
 
         if self.get_datetime(date).date() == datetime.today().date():
             query = '''
                 SELECT EToday
                 FROM Inverters
-                WHERE Serial=?;
+                WHERE Serial=%s;
                 '''
             self.c.execute(query, (inverter_serial,))
         else:
             query = '''
                 SELECT DayYield AS Power
                 FROM MonthData
-                WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
+                WHERE TimeStamp BETWEEN %s AND %s AND Serial=%s;
                 '''
             self.c.execute(query, (day_start, day_end, inverter_serial))
 
@@ -193,7 +196,7 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
-            FROM ( SELECT TimeStamp FROM DayData WHERE Serial=? );
+            FROM ( SELECT TimeStamp FROM DayData WHERE Serial=%s ) as data;
             '''
 
         self.c.execute(query, (inverter_serial,))
@@ -218,12 +221,13 @@ class Database():
         query = '''
             SELECT TimeStamp, SUM(DayYield) AS Power
             FROM MonthData
-            WHERE TimeStamp BETWEEN ? AND ?
+            WHERE TimeStamp BETWEEN %s AND %s
             GROUP BY TimeStamp;
             '''
 
         data['data'] = list()
-        for row in self.c.execute(query, (month_start, month_end)):
+        self.c.execute(query, (month_start, month_end))
+        for row in self.c.fetchall():
             data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
 
@@ -236,7 +240,7 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
-            FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );
+            FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp ) as data;
             '''
 
         self.c.execute(query)
@@ -259,11 +263,12 @@ class Database():
         query = '''
             SELECT TimeStamp, DayYield AS Power
             FROM MonthData
-            WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
+            WHERE TimeStamp BETWEEN %s AND %s AND Serial=%s;
             '''
 
         data['data'] = list()
-        for row in self.c.execute(query, (month_start, month_end, inverter_serial)):
+        self.c.execute(query, (month_start, month_end, inverter_serial))
+        for row in self.c.fetchall():
             data['data'].append({'time': self.convert_local_ts_to_utc(row[0], self.local_timezone), 'power': row[1]})
             month_total += row[1]
 
@@ -277,7 +282,7 @@ class Database():
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
             FROM MonthData
-            WHERE Serial=?;
+            WHERE Serial=%s;
             '''
 
         self.c.execute(query, (inverter_serial,))
@@ -302,7 +307,7 @@ class Database():
         query = '''
                 SELECT SUM(DayYield) AS Power
                 FROM MonthData
-                WHERE TimeStamp BETWEEN ? AND ?;
+                WHERE TimeStamp BETWEEN %s AND %s;
                 '''
 
         current_month_start = year_start
@@ -332,7 +337,7 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
-            FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );
+            FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp ) as data;
             '''
 
         self.c.execute(query)
@@ -357,7 +362,7 @@ class Database():
         query = '''
                 SELECT SUM(DayYield) AS Power
                 FROM MonthData
-                WHERE TimeStamp BETWEEN ? AND ? AND Serial=?;
+                WHERE TimeStamp BETWEEN %s AND %s AND Serial=%s;
                 '''
 
         current_month_start = year_start
@@ -386,7 +391,7 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
-            FROM ( SELECT TimeStamp FROM MonthData WHERE Serial=? GROUP BY TimeStamp );
+            FROM ( SELECT TimeStamp FROM MonthData WHERE Serial=%s GROUP BY TimeStamp ) as data;
             '''
 
         self.c.execute(query, (inverter_serial,))
@@ -444,7 +449,8 @@ class Database():
             '''
         invs = []
         renamings = self.config.get_renamings()
-        for row in self.c.execute(query):
+        self.c.execute(query)
+        for row in self.c.fetchall():
             serial = str(row[0])
 
             if serial == "0":
@@ -496,7 +502,7 @@ class Database():
     def get_epoch_tot(self):
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
-            FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp );
+            FROM ( SELECT TimeStamp FROM MonthData GROUP BY TimeStamp ) as data;
             '''
 
         self.c.execute(query)
@@ -504,7 +510,7 @@ class Database():
 
         query = '''
             SELECT MIN(TimeStamp) as Min, MAX(TimeStamp) as Max
-            FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp );
+            FROM ( SELECT TimeStamp FROM DayData GROUP BY TimeStamp ) as data;
             '''
 
         self.c.execute(query)

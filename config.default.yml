@@ -1,6 +1,10 @@
 ---
 database:
-  path: "/home/pi/smadata/SBFspot.db"
+  mysql:
+    host: 
+    username: 
+    password: 
+    database: 
 co2_avoidance_factor: 0.7
 mail:
   enabled: 'false'
