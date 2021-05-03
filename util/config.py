@@ -3,8 +3,8 @@
 Config module
 Reads configuration file
 """
-import yaml
 import os.path
+import yaml
 
 class Config():
     """The Config class loads the config YAML file"""
@@ -13,43 +13,51 @@ class Config():
         self.config = dict()
 
         if config_path:
-            with open(config_path) as f:
-                self.config = yaml.load(f)
+            with open(config_path) as file:
+                self.config = yaml.load(file)
         else:
             try:
-                with open('config.yml') as f:
-                    self.config = yaml.load(f)
+                with open('config.yml') as file:
+                    self.config = yaml.load(file)
             except OSError:
-                with open('config.default.yml') as f:
-                    self.config = yaml.load(f)
+                with open('config.default.yml') as file:
+                    self.config = yaml.load(file)
 
     def get_config(self):
+        """Fetch basic configs"""
         return self.config
 
     def get_mail_config(self):
+        """Fetch mail configs"""
         return self.config["mail"]
 
     def get_database_path(self):
+        """Fetch database path from config"""
         path = self.config["database"]["path"]
-        if os.path.isfile(path):
-            return self.config["database"]["path"]
-        else:
+        if not os.path.isfile(path):
             msg = "sqlite database %s does not exist, check the config(.default).json!" % path
             raise Exception(msg)
+        return path
 
     def get_co2_avoidance_factor(self):
+        """Fetch CO2 avoidance factor from config"""
         return self.config["co2_avoidance_factor"]
 
     def get_renamings(self):
+        """Fetch inverter's name from config"""
         return self.config["renaming"]
 
-    def log(self, msg, error=''):
-        if error: print(' *', msg, '['+str(error)+']')
-        else: print(' *', msg)
+    @staticmethod
+    def log(msg, error=''):
+        """Define logging"""
+        if error:
+            print(' *', msg, '['+str(error)+']')
+        else:
+            print(' *', msg)
 
 
 if __name__ == '__main__':
 
-    cfg = Config(config_path='../config.yml')
-    print(cfg.get_config())
-    print(cfg.get_co2_avoidance_factor())
+    CFG = Config(config_path='../config.yml')
+    print(CFG.get_config())
+    print(CFG.get_co2_avoidance_factor())

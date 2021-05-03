@@ -9,14 +9,13 @@ Inverters that do not support Speedwire or Bluetooth or that are not from the ma
 
 Current features:
 
-* Web based visualization of daily and monthly power production
+* Web based visualization of daily, monthly, yearly and overall power production
 * Displaying multiple inverters
 * Translations: English, German
 * Mail notification service for inverter disorders and lack of production
 
 Planned features:
 
-* Visualization of yearly power production
 * Visualization of power consumption
 * Validation of `config.yml` with [JSON Schema](https://json-schema.org/)
 * Configuration of _sunportal_ via web interface
