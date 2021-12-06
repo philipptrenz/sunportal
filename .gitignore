@@ -7,3 +7,4 @@ __pycache__/
 config.json
 config.yml
 *.pyc
+.venv/

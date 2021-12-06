@@ -14,14 +14,14 @@ class Config():
 
         if config_path:
             with open(config_path) as f:
-                self.config = yaml.load(f)
+                self.config = yaml.safe_load(f)
         else:
             try:
                 with open('config.yml') as f:
-                    self.config = yaml.load(f)
+                    self.config = yaml.safe_load(f)
             except OSError:
                 with open('config.default.yml') as f:
-                    self.config = yaml.load(f)
+                    self.config = yaml.safe_load(f)
 
     def get_config(self):
         return self.config

@@ -152,7 +152,7 @@ function initializeCharts(serial) {
 	    	},
 	    	maintainAspectRatio: false,
 	        scales: {
-	            yAxes: [{
+	            yAxes: [{ // For stacked inverter data
 	                ticks: {
 	                    beginAtZero: true,
 	                    fontColor: 'rgba(255,255,255,1)',
@@ -162,7 +162,17 @@ function initializeCharts(serial) {
 						color: 'rgba(255,255,255,0.1)'
 					},
 					stacked: true
-	            }],
+	            },{ // For consumption data
+                    id: "consumption-line",
+                    stacked: false,
+                    display: false, //optional if both yAxes use the same scale
+                    ticks: {
+                        beginAtZero: true,
+                        min:0,
+                        max:2
+                    },
+                    type: 'linear'
+                }],
 	            xAxes: [{
 	            	display: true,
 	            	type: 'time',
@@ -567,7 +577,9 @@ function loadData(day) {
 
                     chart_num++;
                 }
+
             }
+            
 
             var backgroundColorShades   = getColorShades(dayChart.data.datasets.length, 'rgba(227,6,19,0.3)')
             var borderColorShades       = getColorShades(dayChart.data.datasets.length, 'rgba(227,6,19,1)')
@@ -595,6 +607,47 @@ function loadData(day) {
                 obj.borderColor = borderColorShades[i];
             }
             yearChart.update();
+
+
+
+
+            // CONSUMPTION DAY DATA
+
+            var consumption = response.requested.consumption
+
+            // Get max y value
+            var dayChartMaxYValue = Math.max(...consumption.day.data.concat(all.day.data).map((d) => d.power));
+            dayChartMaxYValue = Math.ceil(dayChartMaxYValue/100)*100;
+
+            consumption.day.data.forEach(function(obj) {
+                obj.x = moment.unix(obj.time);
+                obj.y = obj.power / 1000;
+                delete obj.time;
+                delete obj.power;
+            })
+
+            dayChart.data.datasets[chart_num] = {
+                label: consumption.day.label,
+                borderColor: "#000000",
+                yAxisID: "consumption-line",
+                data: consumption.day.data,
+                borderWidth: 1,
+                pointRadius: 0,
+                cubicInterpolationMode: 'monotone',
+                tension: 0.8
+            }
+
+            // Set Y Axis scales to same values
+            dayChart.options.scales.yAxes[0].ticks.min = 0;
+            dayChart.options.scales.yAxes[1].ticks.min = 0;
+            dayChart.options.scales.yAxes[0].ticks.max = dayChartMaxYValue / 1000;
+            dayChart.options.scales.yAxes[1].ticks.max = dayChartMaxYValue / 1000;
+
+
+            dayChart.update();
+
+
+
 
 			requesting = false;
 

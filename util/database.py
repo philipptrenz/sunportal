@@ -77,6 +77,10 @@ class Database():
             data['inverters'][inv['serial']]['month'] = self.get_requested_month_for_inverter(inv['serial'], date)
             data['inverters'][inv['serial']]['year'] = self.get_requested_year_for_inverter(inv['serial'], date)
 
+
+        data['consumption'] = dict()
+        data['consumption']['day'] = self.get_requested_day_consumption(date, label_overwrite="Stromverbrauch")
+
         return data
 
     def get_requested_day(self, date):
@@ -133,6 +137,42 @@ class Database():
         else: data['hasNext'] = False
 
         #print(json.dumps(data, indent=4))
+        return data
+
+    def get_requested_day_consumption(self, date, label_overwrite=None):
+
+        data = dict()
+
+        if label_overwrite:
+            data["label"] = label_overwrite
+        else: 
+            data["label"] = "Consumption"
+
+        day_start, day_end = self.get_epoch_day(date)
+        data['interval'] = {'from': self.convert_local_ts_to_utc(day_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(day_end, self.local_timezone)}
+
+        query = '''
+            SELECT TimeStamp, PowerUsed 
+            FROM Consumption 
+            WHERE TimeStamp BETWEEN ? AND ?;
+        '''
+
+        data['data'] = list()
+        for row in self.c.execute(query, (day_start, day_end)):
+            data['data'].append({ 'time': row[0], 'power': row[1] })
+
+
+        query = '''
+            SELECT SUM(EnergyUsed) AS Energy 
+            FROM Consumption 
+            WHERE TimeStamp BETWEEN ? AND ?;
+            '''
+        self.c.execute(query, (day_start, day_end))
+
+        row = self.c.fetchone()
+        if row and row[0]: data['total'] = row[0]
+        else: data['total'] = 0
+
         return data
 
     def get_requested_day_for_inverter(self, inverter_serial, date):
