@@ -613,13 +613,29 @@ function loadData(day) {
 
             // CONSUMPTION DAY DATA
 
-            var consumption = response.requested.consumption
+            var consumption = response.requested.consumption;
+						var consume_data = [];
 
+						// for day data with missing timestamps within the data
+						for (var i in consumption.day.data) {
+							if (i == 0) {
+								consume_data.push(consumption.day.data[i]);
+								continue;
+							}
+							var x = consumption.day.data[i].time;
+							var prev = consume_data[consume_data.length-1].time;
+							while (x - consume_data[consume_data.length-1].time > 450) {
+								console.log(x, prev)
+								consume_data.push({ 'time': prev + 300, 'power': 0 });
+								prev = consume_data[consume_data.length-1].time;
+							}
+							consume_data.push(consumption.day.data[i]);
+						}
             // Get max y value
             var dayChartMaxYValue = Math.max(...consumption.day.data.concat(all.day.data).map((d) => d.power));
             dayChartMaxYValue = Math.ceil(dayChartMaxYValue/100)*100;
 
-            consumption.day.data.forEach(function(obj) {
+            consume_data.forEach(function(obj) {
                 obj.x = moment.unix(obj.time);
                 obj.y = obj.power / 1000;
                 delete obj.time;
@@ -630,7 +646,7 @@ function loadData(day) {
                 label: consumption.day.label,
                 borderColor: "#000000",
                 yAxisID: "consumption-line",
-                data: consumption.day.data,
+                data: consume_data,
                 borderWidth: 1,
                 pointRadius: 0,
                 cubicInterpolationMode: 'monotone',
