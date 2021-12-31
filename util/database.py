@@ -161,7 +161,8 @@ class Database():
         grid_in = list()
         rows_with_zero = 0
         for row in self.c.execute(query, (day_start, day_end)):
-            ts, watts = row
+            ts = row[0]
+            watts = row[1]
             grid_in.append({ 'time': ts, 'watts': watts })
             if watts == 0:
                 rows_with_zero += 1
