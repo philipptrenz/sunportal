@@ -149,26 +149,26 @@ class Database():
         data['interval'] = {'from': self.convert_local_ts_to_utc(day_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(day_end, self.local_timezone)}
 
         query = '''
-            SELECT TimeStamp, GridIn - LAG ( GridIn, 1, GridIn ) OVER ( ORDER BY TimeStamp ) 
+            SELECT TimeStamp, GridIn 
             FROM GridMeter 
             WHERE TimeStamp BETWEEN ? AND ?;
         '''
 
-        # data['data'] = list()
-        # for row in self.c.execute(query, (day_start, day_end)):
-        #     data['data'].append({ 'time': row[0], 'power': row[1] })
-
         grid_in = list()
         rows_with_zero = 0
+        prev_grid_in = None
         for row in self.c.execute(query, (day_start, day_end)):
             ts = row[0]
-            watts = row[1]
+            if prev_grid_in == None:
+                prev_grid_in = row[1]
+                watts = 0
+            else:
+                watts = row[1] - prev_grid_in
+                prev_grid_in = row[1]
             grid_in.append({ 'time': ts, 'watts': watts })
             if watts == 0:
                 rows_with_zero += 1
             elif rows_with_zero > 0:
-                # if rows_with_zero > 2:  # smooth over 15 minutes
-                #    rows_with_zero = 2
                 distributed_watts = watts / (rows_with_zero + 1)
                 for i in range(-(rows_with_zero + 1), 0):
                     grid_in[i]['watts'] = distributed_watts
@@ -193,6 +193,8 @@ class Database():
         row = self.c.fetchone()
         if row and row[0]: data['total'] = row[0]
         else: data['total'] = 0
+
+        print(sum([x['watts'] for x in grid_in]))
 
         return data
 
