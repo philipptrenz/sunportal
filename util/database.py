@@ -79,7 +79,7 @@ class Database():
 
 
         data['consumption'] = dict()
-        data['consumption']['day'] = self.get_requested_day_consumption(date, label_overwrite="Stromverbrauch")
+        data['consumption']['day'] = self.get_requested_day_consumption(date, label_overwrite="Netzbezug")
 
         return data
 
@@ -136,35 +136,55 @@ class Database():
         if (last_data): data['hasNext'] = (last_data > day_end)
         else: data['hasNext'] = False
 
-        #print(json.dumps(data, indent=4))
         return data
 
     def get_requested_day_consumption(self, date, label_overwrite=None):
 
         data = dict()
 
-        if label_overwrite:
-            data["label"] = label_overwrite
-        else: 
-            data["label"] = "Consumption"
+        if label_overwrite: data["label"] = label_overwrite
+        else: data["label"] = "Consumption"
 
         day_start, day_end = self.get_epoch_day(date)
         data['interval'] = {'from': self.convert_local_ts_to_utc(day_start, self.local_timezone), 'to': self.convert_local_ts_to_utc(day_end, self.local_timezone)}
 
         query = '''
-            SELECT TimeStamp, PowerUsed 
-            FROM Consumption 
+            SELECT TimeStamp, GridIn - LAG ( GridIn, 1, GridIn ) OVER ( ORDER BY TimeStamp ) 
+            FROM GridMeter 
             WHERE TimeStamp BETWEEN ? AND ?;
         '''
 
-        data['data'] = list()
-        for row in self.c.execute(query, (day_start, day_end)):
-            data['data'].append({ 'time': row[0], 'power': row[1] })
+        # data['data'] = list()
+        # for row in self.c.execute(query, (day_start, day_end)):
+        #     data['data'].append({ 'time': row[0], 'power': row[1] })
 
+        grid_in = list()
+        rows_with_zero = 0
+        for row in self.c.execute(query, (day_start, day_end)):
+            ts, watts = row
+            grid_in.append({ 'time': ts, 'watts': watts })
+            if watts == 0:
+                rows_with_zero += 1
+            elif rows_with_zero > 0:
+                # if rows_with_zero > 2:  # smooth over 15 minutes
+                #    rows_with_zero = 2
+                distributed_watts = watts / (rows_with_zero + 1)
+                for i in range(-(rows_with_zero + 1), 0):
+                    grid_in[i]['watts'] = distributed_watts
+                rows_with_zero = 0
+
+        data['data'] = list()
+        last_ts = grid_in[0]['time']
+        for row in grid_in:
+            ts = row['time']
+            watts = row['watts']
+            power = watts / (row['time'] - last_ts) * 3600 if row['time'] > last_ts else 0
+            data['data'].append({ 'time': ts, 'power': int(power) })
+            last_ts = ts
 
         query = '''
-            SELECT SUM(EnergyUsed) AS Energy 
-            FROM Consumption 
+            SELECT MAX(GridIn) - MIN(GridIn)
+            FROM GridMeter 
             WHERE TimeStamp BETWEEN ? AND ?;
             '''
         self.c.execute(query, (day_start, day_end))
@@ -483,4 +503,16 @@ class Database():
 
 if __name__ == '__main__':
 
-    print("nothing to do here")
+    # print("nothing to do here")
+
+    import json
+    from config import Config
+
+    config = Config()
+    db = Database(config=config)
+
+    date = '2021-12-31'
+    x = db.get_requested_day_consumption(date)
+    print(json.dumps(x, indent=4))
+    print('\n\n\n\n\n\n')
+
