@@ -194,8 +194,6 @@ class Database():
         if row and row[0]: data['total'] = row[0]
         else: data['total'] = 0
 
-        print(sum([x['watts'] for x in grid_in]))
-
         return data
 
     def get_requested_day_for_inverter(self, inverter_serial, date):
